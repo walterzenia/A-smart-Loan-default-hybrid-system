@@ -1,0 +1,74 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+myenv/
+venv/
+env/
+ENV/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Large Data files (EXCLUDED - 2.6GB+)
+# These are too large for GitHub - download separately or use Git LFS
+data/installments_payments.csv
+data/credit_card_balance.csv
+data/previous_application.csv
+data/POS_CASH_balance.csv
+data/bureau_balance.csv
+data/bureau.csv
+data/application_train.csv
+data/application_test.csv
+
+# Keep these essential small data files (included in repo)
+# data/smoke_hybrid_features.csv (~58MB)
+# data/smoke_engineered.csv (~48MB)
+# data/UCI_Credit_Card.csv (~3MB)
+# data/uci_hybrid_features.csv (~1MB)
+# data/test_*.csv (test cases)
+
+# Model files (23MB total - INCLUDED)
+# All model .pkl files are kept for deployment
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+.env.local
+
+# Output files
+performance_output.txt
+*.out
