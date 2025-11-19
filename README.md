@@ -724,39 +724,10 @@ Loan Default Hybrid System/
 
 ### Technical Documentation
 
-- **[HYBRID_MODEL_SUMMARY.md](HYBRID_MODEL_SUMMARY.md)** - Detailed ensemble architecture
+- **[HYBRID_MODEL_SUMMARY.md](HYBRID_MODEL_SUMMARY.md)** - Detailed ensemble architecture and stacking framework
 - **[MODEL_ARCHITECTURE_FLOWCHART.md](MODEL_ARCHITECTURE_FLOWCHART.md)** - Visual architecture guide
 - **[DATA_FLOW_EXPLANATION.md](DATA_FLOW_EXPLANATION.md)** - Data pipeline documentation
-- **[STREAMLIT_INTEGRATION_SUMMARY.md](STREAMLIT_INTEGRATION_SUMMARY.md)** - Dashboard integration details
-
-### Testing & Reports
-
-- **[TEST_RESULTS_REPORT.md](TEST_RESULTS_REPORT.md)** - Comprehensive testing results
-  - Unit test coverage
-  - Integration test results
-  - Model validation tests
-  - Performance benchmarks
-- **[APP_TESTING_REPORT.md](APP_TESTING_REPORT.md)** - Streamlit application testing
-  - UI/UX testing results
-  - Prediction accuracy validation
-  - Error handling verification
-- **[PERFORMANCE_REPORT.md](PERFORMANCE_REPORT.md)** - Performance benchmarks and analysis
-  - Model loading times (1.6s total)
-  - Prediction latency (35ms ensemble, 20ms traditional, 8ms behavioral)
-  - Batch throughput (130/sec ensemble)
-  - Memory usage analysis
-  - Bottleneck identification
-  - Scalability projections
-
-### Code Quality & Improvements
-
-- **[CODE_QUALITY_IMPROVEMENTS.md](CODE_QUALITY_IMPROVEMENTS.md)** - Code quality improvements summary
-  - File cleanup and organization (13 files removed)
-  - Documentation enhancements
-  - Fixed SettingWithCopyWarning
-  - Added comprehensive docstrings
-  - Workspace reorganization
-  - Quality metrics and recommendations
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions for multiple platforms
 
 ### Project Status & Limitations
 
