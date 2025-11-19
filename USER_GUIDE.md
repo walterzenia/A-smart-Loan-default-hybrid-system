@@ -43,7 +43,7 @@
 
 ## Navigating the Dashboard
 
-### Homepage 🏠
+### Homepage 
 
 **Location:** Main landing page
 
@@ -61,16 +61,16 @@
 
 ### Sidebar Navigation
 
-- 📊 **Exploratory Data Analysis (EDA)** - Data exploration and visualization
-- 🔮 **Prediction** - Make loan default predictions
-- 📈 **Feature Importance** - View key predictive features
-- 📊 **Model Metrics** - Detailed model performance analysis
+- **Exploratory Data Analysis (EDA)** - Data exploration and visualization
+-  **Prediction** - Make loan default predictions
+-  **Feature Importance** - View key predictive features
+-  **Model Metrics** - Detailed model performance analysis
 
 ---
 
 ## Making Predictions
 
-### Prediction Page 🔮
+### Prediction Page 
 
 #### Step 1: Select Model Type
 
@@ -88,7 +88,7 @@ Choose from three available models:
 - Input: 27 features including payment history, bill amounts
 - Use when: You have credit card transaction data
 
-**Ensemble Hybrid Model** ⭐ _Recommended_
+**Ensemble Hybrid Model**  _Recommended_
 
 - Best for: Maximum accuracy
 - Input: Combined features from both models
@@ -160,9 +160,9 @@ Choose from three available models:
 
 **Risk Assessment:**
 
-- 🟢 **Low Risk** - Default probability < 30%
-- 🟡 **Medium Risk** - Default probability 30-60%
-- 🔴 **High Risk** - Default probability > 60%
+- **Low Risk** - Default probability < 30%
+-  **Medium Risk** - Default probability 30-60%
+-  **High Risk** - Default probability > 60%
 
 **Prediction Details:**
 
@@ -239,9 +239,9 @@ Choose from three available models:
 
 Visual categorization for quick decision-making:
 
-- 🟢 **Low Risk:** Safe to approve
-- 🟡 **Medium Risk:** Requires manual review
-- 🔴 **High Risk:** Consider rejection or additional safeguards
+-  **Low Risk:** Safe to approve
+-  **Medium Risk:** Requires manual review
+-  **High Risk:** Consider rejection or additional safeguards
 
 ### Model-Specific Insights
 
@@ -275,7 +275,7 @@ Visual categorization for quick decision-making:
 - Debt stress index
 - Repayment ratio
 
-#### Ensemble Model Results ⭐
+#### Ensemble Model Results 
 
 **Strengths:**
 
@@ -304,7 +304,7 @@ Visual categorization for quick decision-making:
 
 ## Model Metrics
 
-### Model Metrics Page 📊
+### Model Metrics Page 
 
 #### Accessing Metrics
 
@@ -440,7 +440,7 @@ Visual categorization for quick decision-making:
 
 ## Feature Importance
 
-### Feature Importance Page 📈
+### Feature Importance Page 
 
 #### Purpose
 
@@ -485,7 +485,7 @@ Understand which features drive model decisions
 
 ## Exploratory Data Analysis
 
-### EDA Page 📊
+### EDA Page 
 
 #### Data Exploration Options
 
@@ -583,47 +583,47 @@ Understand which features drive model decisions
 
 **Data Quality:**
 
-- ✅ Provide complete information (minimize missing values)
-- ✅ Use accurate, up-to-date data
-- ✅ Verify calculations (ratios, percentages)
-- ✅ Check for typos in numeric fields
+-  Provide complete information (minimize missing values)
+-  Use accurate, up-to-date data
+-  Verify calculations (ratios, percentages)
+-  Check for typos in numeric fields
 
 **Model Selection:**
 
-- ✅ Use **Ensemble** for best accuracy
-- ✅ Use **Traditional** when you have comprehensive financial data
-- ✅ Use **Behavioral** when you have transaction history
-- ✅ Compare predictions across models for high-stake decisions
+-  Use **Ensemble** for best accuracy
+-  Use **Traditional** when you have comprehensive financial data
+-  Use **Behavioral** when you have transaction history
+-  Compare predictions across models for high-stake decisions
 
 **Interpretation:**
 
-- ✅ Consider risk level, not just probability
-- ✅ Review feature importance for decision context
-- ✅ Use medium-risk predictions for manual review
-- ✅ Document decisions for compliance
+-  Consider risk level, not just probability
+-  Review feature importance for decision context
+-  Use medium-risk predictions for manual review
+-  Document decisions for compliance
 
 ### For Batch Processing
 
 **Preparation:**
 
-- ✅ Clean data before upload
-- ✅ Standardize formats across rows
-- ✅ Test with small batch first (10 rows)
-- ✅ Keep original data as backup
+-  Clean data before upload
+-  Standardize formats across rows
+-  Test with small batch first (10 rows)
+-  Keep original data as backup
 
 **Validation:**
 
-- ✅ Review summary statistics after processing
-- ✅ Check for unusual patterns (all high/low risk)
-- ✅ Spot-check individual predictions
-- ✅ Compare batch results to historical patterns
+-  Review summary statistics after processing
+-  Check for unusual patterns (all high/low risk)
+-  Spot-check individual predictions
+-  Compare batch results to historical patterns
 
 **Record Keeping:**
 
-- ✅ Download results immediately
-- ✅ Save with timestamp in filename
-- ✅ Include metadata (model used, date, batch ID)
-- ✅ Archive input and output files
+-  Download results immediately
+-  Save with timestamp in filename
+-  Include metadata (model used, date, batch ID)
+-  Archive input and output files
 
 ---
 

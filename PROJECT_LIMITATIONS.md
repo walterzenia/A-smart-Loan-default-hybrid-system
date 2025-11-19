@@ -47,7 +47,7 @@ The Traditional Model (`model_hybrid.pkl`) requires **487 features** for accurat
 | Features Available       | 487 (100%)         | 24 (4.9%)                      |
 | Missing Features         | 0                  | 463 (95.1%)                    |
 | Default Detection        | 60%+ accuracy      | ~30% accuracy                  |
-| High-Risk Identification | ✅ Excellent       | ⚠️ Poor                        |
+| High-Risk Identification |  Excellent       |  Poor                        |
 
 **Test Results:**
 
@@ -84,9 +84,9 @@ def align_features(X, model):
 
 **Trade-off:**
 
-- ✅ System functional for manual form input
-- ❌ Prediction accuracy significantly reduced
-- ❌ Cannot reliably detect high-risk applicants via traditional model alone
+-  System functional for manual form input
+-  Prediction accuracy significantly reduced
+-  Cannot reliably detect high-risk applicants via traditional model alone
 
 #### Workarounds and Recommendations
 
@@ -100,7 +100,7 @@ def align_features(X, model):
 
 2. **Manual Form Predictions:**
 
-   - **Primary Model:** Use Behavioral Model (62.79% accuracy ✅)
+   - **Primary Model:** Use Behavioral Model (62.79% accuracy )
    - **Secondary Model:** Use Ensemble (combines both, ~41% accuracy)
    - **Avoid:** Relying solely on Traditional Model predictions
 
@@ -138,14 +138,14 @@ def align_features(X, model):
 
 #### Affected Components
 
-- ✅ `apps/home.py` - Manual loan form (affected)
-- ✅ `apps/batch.py` - CSV batch prediction (works well with complete data)
-- ✅ `apps/utils.py` - `align_features()` function (handles missing features)
-- ✅ Test suite - Traditional model tests show 29.50% (expected limitation)
+-  `apps/home.py` - Manual loan form (affected)
+-  `apps/batch.py` - CSV batch prediction (works well with complete data)
+-  `apps/utils.py` - `align_features()` function (handles missing features)
+-  Test suite - Traditional model tests show 29.50% (expected limitation)
 
 #### Status
 
-**Current:** ⚠️ **DOCUMENTED LIMITATION**  
+**Current:**  **DOCUMENTED LIMITATION**  
 **Impact:** HIGH (50% accuracy reduction)  
 **Mitigation:** Use Behavioral Model for manual form  
 **Resolution:** FUTURE ENHANCEMENT (lightweight model training)
@@ -215,14 +215,14 @@ Base Features (20):
 
 **Good Aspects:**
 
-- ✅ Ensemble doesn't blindly trust either model
-- ✅ Recognizes when Traditional Model is unreliable
-- ✅ Provides middle-ground prediction (uncertainty indicator)
+-  Ensemble doesn't blindly trust either model
+-  Recognizes when Traditional Model is unreliable
+-  Provides middle-ground prediction (uncertainty indicator)
 
 **Problem:**
 
-- ❌ Pulls down accurate Behavioral Model predictions
-- ❌ Results in false negatives (high-risk classified as medium-risk)
+-  Pulls down accurate Behavioral Model predictions
+-  Results in false negatives (high-risk classified as medium-risk)
 
 #### Workarounds and Recommendations
 
@@ -253,7 +253,7 @@ Base Features (20):
 
 #### Status
 
-**Current:** ⚠️ **DOCUMENTED LIMITATION**  
+**Current:**  **DOCUMENTED LIMITATION**  
 **Impact:** MEDIUM (reduces from 62.79% to 41.45%)  
 **Mitigation:** Use Behavioral Model for manual form  
 **Resolution:** FUTURE ENHANCEMENT (confidence-weighted ensemble)
@@ -281,9 +281,9 @@ The Behavioral Model requires specific engineered features including intermediat
 
 **Current:**
 
-- ✅ Test script handles this correctly
-- ✅ Feature engineering pipeline documented
-- ⚠️ Manual computation required in code
+-  Test script handles this correctly
+-  Feature engineering pipeline documented
+-  Manual computation required in code
 
 **Risk:**
 
@@ -327,7 +327,7 @@ behav_aligned = behav_engineered[behavioral_model.feature_name_]
 
 #### Status
 
-**Current:** ✅ **WORKING (with workaround)**  
+**Current:**  **WORKING (with workaround)**  
 **Impact:** LOW (handled in code)  
 **Resolution:** FUTURE ENHANCEMENT (update feature engineering function)
 
@@ -395,18 +395,18 @@ behav_aligned = behav_engineered[behavioral_model.feature_name_]
 
 ## Known Issues
 
-### Issue 1: DataFrame Fragmentation (RESOLVED ✅)
+### Issue 1: DataFrame Fragmentation (RESOLVED )
 
 **Problem:** `align_features()` caused 463 PerformanceWarnings per call  
 **Solution:** Replaced loop with `pd.concat()` (November 17, 2025)  
-**Status:** ✅ FIXED
+**Status:**  FIXED
 
-### Issue 2: Ensemble Architecture Misunderstanding (RESOLVED ✅)
+### Issue 2: Ensemble Architecture Misunderstanding (RESOLVED )
 
 **Problem:** Treated ensemble as feature concatenation (526 features)  
 **Reality:** Meta-learner requiring predictions (27 features)  
 **Solution:** Redesigned ensemble test with correct pipeline  
-**Status:** ✅ DOCUMENTED
+**Status:**  DOCUMENTED
 
 ---
 
@@ -442,14 +442,14 @@ behav_aligned = behav_engineered[behavioral_model.feature_name_]
 
 ### Critical Limitations
 
-1. ⚠️ **Traditional Model:** 50% accuracy reduction with manual form (24/487 features)
-2. ⚠️ **Ensemble Model:** Conservative predictions when Traditional unreliable
+1.  **Traditional Model:** 50% accuracy reduction with manual form (24/487 features)
+2.  **Ensemble Model:** Conservative predictions when Traditional unreliable
 
 ### Working Well
 
-1. ✅ **Behavioral Model:** 62.79% accuracy with manual form (TEST PASSED)
-2. ✅ **Feature Engineering:** Pipeline functional with documented requirements
-3. ✅ **Code Optimization:** DataFrame fragmentation resolved
+1.  **Behavioral Model:** 62.79% accuracy with manual form (TEST PASSED)
+2.  **Feature Engineering:** Pipeline functional with documented requirements
+3.  **Code Optimization:** DataFrame fragmentation resolved
 
 ### Recommended Usage
 

@@ -30,12 +30,12 @@ This project implements a sophisticated loan default prediction system that leve
 
 ### Key Features
 
--  Multi-model architecture (Traditional, Behavioral, Hybrid)
--  Advanced feature engineering pipeline
--  Ensemble stacking with meta-learning
--  Interactive Streamlit web dashboard
--  SHAP-based model interpretability
--  Real-time prediction capabilities
+- Multi-model architecture (Traditional, Behavioral, Hybrid)
+- Advanced feature engineering pipeline
+- Ensemble stacking with meta-learning
+- Interactive Streamlit web dashboard
+- SHAP-based model interpretability
+- Real-time prediction capabilities
 
 ---
 
@@ -299,6 +299,7 @@ params = {
 > **📘 For detailed ensemble framework explanation, see [HYBRID_MODEL_SUMMARY.md](HYBRID_MODEL_SUMMARY.md)**
 >
 > The document includes:
+>
 > - Comprehensive stacking architecture with meta-learning
 > - Comparison with other ensemble methods (Bagging, Boosting, Voting)
 > - Two-layer design with 27 meta-features
@@ -365,10 +366,10 @@ Confusion Matrix:
 
 **Key Improvements**:
 
--  +9% AUC improvement over traditional model
--  +9.1% AUC improvement over behavioral model
--  Better false positive reduction
--  Robust to feature distribution shifts
+- +9% AUC improvement over traditional model
+- +9.1% AUC improvement over behavioral model
+- Better false positive reduction
+- Robust to feature distribution shifts
 
 ---
 
@@ -664,7 +665,7 @@ Metrics:
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
 Loan Default Hybrid System/
@@ -710,7 +711,7 @@ Loan Default Hybrid System/
 
 ---
 
-##  Documentation
+## Documentation
 
 ### User Documentation
 
@@ -767,7 +768,7 @@ Loan Default Hybrid System/
 
 ---
 
-##  Testing & Quality
+## Testing & Quality
 
 ### Test Suite
 
@@ -795,9 +796,9 @@ pytest --cov=src tests/
 
 ### Code Quality Improvements (Recent)
 
- **Fixed SettingWithCopyWarnings** - Feature engineering functions now use `.copy()` to prevent pandas warnings
+**Fixed SettingWithCopyWarnings** - Feature engineering functions now use `.copy()` to prevent pandas warnings
 
- **Enhanced Model Metrics Page** - Now displays:
+**Enhanced Model Metrics Page** - Now displays:
 
 - Stored training metrics from pickle files
 - ROC curves for all models including ensemble
@@ -805,13 +806,13 @@ pytest --cov=src tests/
 - Training history visualization
 - Confusion matrices and prediction distributions
 
- **Suppressed Irrelevant Warnings** - Clean console output:
+  **Suppressed Irrelevant Warnings** - Clean console output:
 
 - sklearn version mismatch warnings suppressed
 - LightGBM shape warnings filtered
 - Streamlit deprecation warnings fixed
 
- **Improved User Experience**:
+  **Improved User Experience**:
 
 - Removed unnecessary loading messages
 - Fixed plotly configuration warnings
@@ -819,7 +820,7 @@ pytest --cov=src tests/
 
 ---
 
-##  Known Limitations
+## Known Limitations
 
 ### Model Limitations
 
@@ -974,6 +975,6 @@ For detailed limitations, see **[PROJECT_LIMITATIONS.md](PROJECT_LIMITATIONS.md)
 
 **Last Updated**: November 18, 2025  
 **Version**: 2.0.0  
-**Status**: Production Ready 
+**Status**: Production Ready
 
 ---
