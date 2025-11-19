@@ -57,11 +57,19 @@ This project implements a sophisticated loan default prediction system that leve
 ┌─────────────────────────────────────────────────────────────┐
 │              Feature Engineering Pipeline                    │
 ├─────────────────────────────────────────────────────────────┤
-│  src/feature_engineering.py                                 │
-│  • process_apps()        - Traditional features             │
-│  • behaviorial_features() - Behavioral features             │
-│  • process_bureau()      - Bureau aggregations              │
-│  • process_prev()        - Previous loan patterns           │
+│  src/feature_engineering.py - Core Feature Functions        │
+│  • process_apps()        - Application features (13)        │
+│  • process_prev()        - Previous loan features           │
+│  • process_bureau()      - Credit bureau aggregations       │
+│  • process_pos()         - POS cash balance features        │
+│  • process_install()     - Installment payment features     │
+│  • process_card()        - Credit card features             │
+│  • behaviorial_features()- UCI behavioral features (39)     │
+│                                                              │
+│  src/extract_features.py - Feature Orchestration           │
+│  • traditional_features()- Combines apps + prev + bureau    │
+│  • hybrid_features()     - All features (487 total)         │
+│  • behaviorial_features()- Behavioral pipeline              │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -125,7 +133,19 @@ data = balance_target_variable(data)
 
 ### 2. Feature Engineering
 
-**Location**: `src/feature_engineering.py`
+**Architecture**: Two-layer feature pipeline
+
+**Layer 1 - Core Functions** (`src/feature_engineering.py`):
+
+- Individual feature transformation functions
+- Process specific datasets (apps, bureau, previous, balances)
+- Create domain-specific features
+
+**Layer 2 - Orchestration** (`src/extract_features.py`):
+
+- Combines multiple feature sets
+- Merges aggregated datasets
+- Exports different feature configurations for different models
 
 #### A. Traditional Features (Home Credit)
 
@@ -671,15 +691,64 @@ Metrics:
 Loan Default Hybrid System/
 │
 ├── app.py                          # Main Streamlit entry point
-├── requirement.txt                 # Python dependencies
-├── README.md                       # This comprehensive documentation
-├── HYBRID_MODEL_SUMMARY.md        # Detailed ensemble documentation
+├── requirements.txt                # Python dependencies
+├── README.md                       # Project documentation
+├── HYBRID_MODEL_SUMMARY.md        # Detailed ensemble architecture
+├── DEPLOYMENT_GUIDE.md            # Deployment instructions
 │
-├── data/                          # Data directory
-│   ├── application_train.csv      # Home Credit training data
+├── data/                          # Data directory (tracked with Git LFS)
+│   ├── application_train.csv      # Home Credit training data (2.5 GB)
 │   ├── smoke_engineered.csv       # Processed holdout data (20K rows)
+│   ├── smoke_hybrid_features.csv  # Hybrid features for ensemble
 │   ├── UCI_Credit_Card.csv        # UCI behavioral data
 │   ├── uci_interface_test.csv     # UCI test interface
+│   └── bureau.csv, previous_application.csv, etc.
+│
+├── models/                        # Trained models
+│   ├── model_hybrid.pkl           # Traditional model (7.69 MB, 487 features)
+│   ├── first_lgbm_model.pkl       # Behavioral model (1.05 MB, 31 features)
+│   ├── model_ensemble_wrapper.pkl # Ensemble wrapper (8.91 MB)
+│   ├── model_ensemble_hybrid.pkl  # Raw meta-learner
+│   └── ensemble_metadata.pkl      # Ensemble configuration
+│
+├── src/                           # Source code modules
+│   ├── __init__.py
+│   ├── config.py                  # Configuration and file paths
+│   │
+│   ├── data_preprocessing.py      # Data loading and validation
+│   │   └── get_dataset()          # Loads all Home Credit CSVs
+│   │   └── get_balance_data()     # Loads balance histories
+│   │
+│   ├── feature_engineering.py     # Core feature transformation functions
+│   │   └── process_apps()         # Application features (13)
+│   │   └── process_prev()         # Previous loan features
+│   │   └── process_bureau()       # Bureau aggregations
+│   │   └── process_pos()          # POS cash features
+│   │   └── process_install()      # Installment features
+│   │   └── process_card()         # Credit card features
+│   │   └── behaviorial_features() # UCI behavioral pipeline
+│   │
+│   ├── extract_features.py        # Feature orchestration layer
+│   │   └── traditional_features() # Combines apps + prev + bureau (487)
+│   │   └── hybrid_features()      # All feature sets combined (487)
+│   │   └── behaviorial_features() # Behavioral pipeline wrapper
+│   │
+│   ├── model_training.py          # Model training pipeline
+│   │   └── train_classifier()     # LightGBM training with CV
+│   │
+│   ├── train_ensemble_hybrid.py   # Ensemble training script
+│   │   └── Creates meta-learner with stacking
+│   │
+│   ├── create_hybrid_features.py  # Feature simulation for ensemble
+│   │   └── Generates behavioral features for Home Credit data
+│   │
+│   ├── ensemble_model.py          # Ensemble wrapper class
+│   │   └── EnsembleHybridModel    # Production-ready ensemble
+│   │
+│   ├── inference.py               # Prediction utilities
+│   ├── model_evaluation.py        # Model evaluation metrics
+│   ├── utils.py                   # Helper functions
+│   └── visualization.py           # Plotting utilities
 │   ├── smoke_hybrid_features.csv  # Hybrid features (Home Credit)
 │   └── uci_hybrid_features.csv    # Hybrid features (UCI)
 │
@@ -764,6 +833,7 @@ pytest tests/test_ensemble_direct.py
 # Run with coverage
 pytest --cov=src tests/
 ```
+
 ---
 
 ## Known Limitations

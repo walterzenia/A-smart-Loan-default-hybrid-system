@@ -1,21 +1,81 @@
- # Engineering features for machine learning models
+"""
+Feature Engineering Pipeline for Loan Default Prediction
+
+This module implements comprehensive feature engineering for both traditional
+credit scoring (Home Credit data) and behavioral analysis (UCI Credit Card data).
+
+Pipeline Structure:
+1. Traditional Features: Credit history, demographics, external scores
+2. Behavioral Features: Payment patterns, spending behavior, utilization
+3. Hybrid Features: Combined features for ensemble model
+
+Author: Daniel Ajayi
+Date: November 2025
+Version: 2.0
+"""
+
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from typing import Optional
 
 # Ensure we operate on copies to avoid SettingWithCopyWarning when callers pass slices
 def _ensure_copy(df: pd.DataFrame) -> pd.DataFrame:
+    """Create a copy of the DataFrame to prevent mutation of original data."""
     return df.copy()
 
-# Function for current Loan Application dataset feature engineering
-def process_apps(apps: pd.DataFrame) -> pd.DataFrame :
 
+def process_apps(apps: pd.DataFrame) -> pd.DataFrame:
     """
-    APPS_EXT_SOURCE_MEANとAPPS_EXT_SOURCE_STD: EXT_SOURCE_1、EXT_SOURCE_2
-    APPS_ANNUITY_CREDIT_RATIOとAPPS_GOODS_CREDIT_RATIO
-    APPS_ANNUITY_INCOME_RATIO、APPS_CREDIT_INCOME_RATIO、APPS_GOODS_INCOME_RATIO、APPS_CNT_FAM_INCOME_RATIO
-    APPS_EMPLOYED_BIRTH_RATIO、APPS_INCOME_EMPLOYED_RATIO、APPS_INCOME_BIRTH_RATIO、APPS_CAR_BIRTH_RATIO、APPS_CAR_EMPLOYED_RATIO
-
+    Engineer features for Home Credit application data (Traditional Model).
+    
+    Creates 13 new features from raw application data including:
+    - Credit score aggregations (mean, std of external sources)
+    - Financial ratios (annuity/credit, goods/credit, etc.)
+    - Income-based ratios (credit/income, goods/income, etc.)
+    - Temporal ratios (employment/age, income/employment, etc.)
+    
+    Parameters:
+    -----------
+    apps : pd.DataFrame
+        Raw application data with columns:
+        - EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3: External credit scores
+        - AMT_CREDIT, AMT_ANNUITY, AMT_GOODS_PRICE: Loan amounts
+        - AMT_INCOME_TOTAL: Annual income
+        - CNT_FAM_MEMBERS: Family size
+        - DAYS_BIRTH, DAYS_EMPLOYED: Age and employment indicators
+        - OWN_CAR_AGE: Vehicle age
+    
+    Returns:
+    --------
+    pd.DataFrame
+        Original data + 13 engineered features with 'APPS_' prefix
+        
+    Features Created:
+    -----------------
+    - APPS_EXT_SOURCE_MEAN: Average of external credit scores
+    - APPS_EXT_SOURCE_STD: Variability in credit scores
+    - APPS_ANNUITY_CREDIT_RATIO: Monthly payment / Total loan
+    - APPS_GOODS_CREDIT_RATIO: Item price / Loan amount
+    - APPS_ANNUITY_INCOME_RATIO: Payment burden relative to income
+    - APPS_CREDIT_INCOME_RATIO: Loan size relative to income
+    - APPS_GOODS_INCOME_RATIO: Purchase price / Annual income
+    - APPS_CNT_FAM_INCOME_RATIO: Income per family member
+    - APPS_EMPLOYED_BIRTH_RATIO: Employment length / Age
+    - APPS_INCOME_EMPLOYED_RATIO: Income / Employment duration
+    - APPS_INCOME_BIRTH_RATIO: Income / Age
+    - APPS_CAR_BIRTH_RATIO: Car age / Person age
+    - APPS_CAR_EMPLOYED_RATIO: Car age / Employment length
+    
+    Note:
+    -----
+    Infinite values from division are replaced with NaN.
+    Original DataFrame is not modified (creates copy internally).
+    
+    Example:
+    --------
+    >>> apps_engineered = process_apps(raw_applications)
+    >>> print(apps_engineered['APPS_CREDIT_INCOME_RATIO'].describe())
     """
     apps = _ensure_copy(apps)
     # 1. Deal with missing values in EXT_SOURCE columns
@@ -47,13 +107,51 @@ def process_apps(apps: pd.DataFrame) -> pd.DataFrame :
 
     return apps
 
-# Function for Previous Loan Application dataset feature engineering
 def process_prev(prev: pd.DataFrame) -> pd.DataFrame:
     """
-    PREV_APPLICATION_CREDIT_RATIO: AMT_APPLICATIONとAMT_CREDITの比率
-    PREV_APPLICATION_GOODS_RATIO: AMT_APPLICATIONとAMT_GOODS_PRICEの比率
-    PREV_CREDIT_GOODS_RATIO: AMT_CREDITとAMT_GOODS_PRICEの比率
-    PREV_DAYS_DECISION_DIFF: DAYS_DECISIONとDAYS_APPLICATIONの差
+    Engineer features for previous loan application data.
+    
+    Creates 8 new features analyzing previous loan history including:
+    - Credit differences and ratios
+    - Timeline analysis (payment delays, due dates)
+    - Interest rate estimation
+    
+    Parameters:
+    -----------
+    prev : pd.DataFrame
+        Previous application data with columns:
+        - AMT_APPLICATION, AMT_CREDIT, AMT_GOODS_PRICE: Loan amounts
+        - AMT_ANNUITY: Monthly payment
+        - CNT_PAYMENT: Number of payments
+        - DAYS_DECISION: Days before decision
+        - DAYS_FIRST_DRAWING, DAYS_FIRST_DUE: Payment timing
+        - DAYS_LAST_DUE_1ST_VERSION, DAYS_LAST_DUE: Due date changes
+        - DAYS_TERMINATION: Loan termination date
+    
+    Returns:
+    --------
+    pd.DataFrame
+        Original data + 8 engineered features with 'PREV_' prefix
+        
+    Features Created:
+    -----------------
+    - PREV_CREDIT_DIFF: Requested vs approved loan amount difference
+    - PREV_GOODS_DIFF: Requested vs goods price difference
+    - PREV_CREDIT_APPL_RATIO: Approval rate (credit/application)
+    - PREV_GOODS_APPL_RATIO: Goods price / Application amount
+    - PREV_DAYS_LAST_DUE_DIFF: Change in due date over time
+    - PREV_INTERESTS_RATE: Estimated interest rate
+    
+    Data Cleaning:
+    --------------
+    - Replaces sentinel value 365243 with NaN in date columns
+    - Handles division by zero in interest rate calculation
+    - Replaces infinite values with NaN
+    
+    Example:
+    --------
+    >>> prev_engineered = process_prev(previous_applications)
+    >>> print(prev_engineered['PREV_CREDIT_APPL_RATIO'].mean())
     """
     prev = _ensure_copy(prev)
     prev['PREV_CREDIT_DIFF'] = prev['AMT_APPLICATION'] - prev['AMT_CREDIT']
@@ -436,12 +534,75 @@ def process_card(card: pd.DataFrame) -> pd.DataFrame:
 
     return card_agg
 
-# Behaviourial features 
 
 def behaviorial_features(uci: pd.DataFrame) -> pd.DataFrame:
     """
-    Create behavioral features from UCI Credit Card dataset.
-    Returns a new DataFrame with additional engineered features.
+    Create behavioral features from UCI Credit Card dataset (Behavioral Model).
+    
+    Engineers 31 features analyzing payment behavior, spending patterns, and
+    financial stress indicators from 6 months of credit card history.
+    
+    Parameters:
+    -----------
+    uci : pd.DataFrame
+        UCI Credit Card data with columns:
+        - LIMIT_BAL: Credit limit
+        - SEX, EDUCATION, MARRIAGE, AGE: Demographics
+        - PAY_0 to PAY_6: Payment status history (0=on-time, 1+=months late)
+        - BILL_AMT1 to BILL_AMT6: Monthly bill amounts
+        - PAY_AMT1 to PAY_AMT6: Monthly payment amounts
+    
+    Returns:
+    --------
+    pd.DataFrame
+        Original data + 31 engineered behavioral features
+        
+    Feature Categories:
+    -------------------
+    
+    1. AGGREGATE FEATURES (5):
+       - total_billed_amount: Sum of all bills
+       - total_payment_amount: Sum of all payments
+       - avg_transaction_amount: Average monthly spending
+       - max_billed_amount: Highest single bill
+       - max_payment_amount: Largest payment made
+    
+    2. VOLATILITY & CONSISTENCY (8):
+       - spending_volatility: Variability in bills (std)
+       - income_consistency: Variability in payments (std)
+       - bill_change_1_2 to bill_change_5_6: Month-to-month balance changes
+       - rolling_balance_volatility: Volatility of balance changes
+    
+    3. FINANCIAL STRESS INDICATORS (4):
+       - net_flow_balance: Bills - Payments (debt accumulation)
+       - debt_stress_index: Bills / Payments ratio
+       - repayment_ratio: Payments / Bills (repayment capacity)
+       - missed_payment_count: Months with zero payment
+    
+    4. BEHAVIORAL RATIOS (3):
+       - payment_consistency_ratio: Payment volatility normalized by amount
+       - spend_to_income_volatility_ratio: Spending vs income variability
+       - max_to_mean_bill_ratio: Impulsive spending indicator
+    
+    5. TREND FEATURES (1):
+       - credit_utilization_trend: Linear trend in bill amounts over time
+    
+    Usage:
+    ------
+    This function is used for the behavioral model which focuses on
+    dynamic payment patterns rather than static credit worthiness.
+    
+    Note:
+    -----
+    - Creates a copy to avoid SettingWithCopyWarning
+    - Adds 1 to denominators to prevent division by zero
+    - Returns DataFrame with both original and engineered features
+    
+    Example:
+    --------
+    >>> uci_engineered = behaviorial_features(uci_raw_data)
+    >>> print(uci_engineered['debt_stress_index'].describe())
+    >>> high_risk = uci_engineered[uci_engineered['missed_payment_count'] > 2]
     """
     # Create a copy to avoid SettingWithCopyWarning
     uci = uci.copy()
