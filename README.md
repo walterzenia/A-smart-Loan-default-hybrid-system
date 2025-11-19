@@ -296,7 +296,7 @@ params = {
 
 **Training Script**: `src/train_ensemble_hybrid.py`
 
-> **📘 For detailed ensemble framework explanation, see [HYBRID_MODEL_SUMMARY.md](HYBRID_MODEL_SUMMARY.md)**
+> ** For detailed ensemble framework explanation, see [HYBRID_MODEL_SUMMARY.md](HYBRID_MODEL_SUMMARY.md)**
 >
 > The document includes:
 >
@@ -764,31 +764,6 @@ pytest tests/test_ensemble_direct.py
 # Run with coverage
 pytest --cov=src tests/
 ```
-
-### Code Quality Improvements (Recent)
-
-**Fixed SettingWithCopyWarnings** - Feature engineering functions now use `.copy()` to prevent pandas warnings
-
-**Enhanced Model Metrics Page** - Now displays:
-
-- Stored training metrics from pickle files
-- ROC curves for all models including ensemble
-- Feature importance for meta-learner
-- Training history visualization
-- Confusion matrices and prediction distributions
-
-  **Suppressed Irrelevant Warnings** - Clean console output:
-
-- sklearn version mismatch warnings suppressed
-- LightGBM shape warnings filtered
-- Streamlit deprecation warnings fixed
-
-  **Improved User Experience**:
-
-- Removed unnecessary loading messages
-- Fixed plotly configuration warnings
-- Streamlined prediction workflow
-
 ---
 
 ## Known Limitations
