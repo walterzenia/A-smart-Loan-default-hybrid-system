@@ -100,34 +100,28 @@ This project implements a sophisticated loan default prediction system that leve
 
 ## Data Pipeline
 
-### 1. Data Preprocessing
+### 1. Data Loading
 
 **Location**: `src/data_preprocessing.py`
 
 **Process**:
 
 ```python
-# Handle missing values
-data = handle_missing_values(raw_data)
+# Load all Home Credit datasets
+apps, prev, bureau, bureau_bal, pos_bal, install, card_bal = get_dataset()
 
-# Encode categorical variables
-data = encode_categorical(data)
-
-# Remove outliers
-data = remove_outliers(data, columns=['AMT_INCOME_TOTAL', 'AMT_CREDIT'])
-
-# Balance dataset (if needed)
-data = balance_target_variable(data)
+# Load balance-specific datasets
+pos, installments, credit_card = get_balance_data()
 ```
 
-**Key Operations**:
+**Key Functions**:
 
-- Missing value imputation (median for numeric, mode for categorical)
-- Outlier detection using IQR method
-- Class imbalance handling with SMOTE
-- Data type optimization
+- `get_dataset()`: Loads all 8 CSV files (train, test, previous, bureau, bureau_balance, POS, installments, credit card)
+- `get_balance_data()`: Loads the 3 balance history files
+- Uses Git LFS for large files (2.7 GB total)
+- Concatenates train/test for unified processing
 
-**Results**: Clean dataset ready for feature engineering
+**Results**: Raw datasets loaded and ready for feature engineering
 
 ---
 
