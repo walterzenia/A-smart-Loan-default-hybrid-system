@@ -325,10 +325,6 @@ Loan Default Hybrid System/
 └── HYBRID_MODEL_SUMMARY.md          ← This file
 ```
 
-## Author
-
-Daniel Ajayi
-
 ## Date
 
 November 11, 2025

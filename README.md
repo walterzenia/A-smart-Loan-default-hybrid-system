@@ -960,12 +960,6 @@ For detailed limitations, see **[PROJECT_LIMITATIONS.md](PROJECT_LIMITATIONS.md)
 
 ---
 
-## Author
-
-**Developed by**: Daniel Ajayi
-
----
-
 ## Acknowledgments
 
 ### Data Sources

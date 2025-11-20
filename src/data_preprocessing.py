@@ -10,7 +10,6 @@ Supports multiple data sources including:
 
 All file paths are managed through centralized config for easy deployment.
 
-Author: Daniel Ajayi
 Date: November 2025
 Version: 2.0
 """

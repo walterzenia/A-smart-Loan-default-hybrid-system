@@ -1,8 +1,6 @@
 """
 Loan Default Prediction Dashboard
 Main Application Entry Point
-
-Developed by Daniel Ajayi
 """
 import warnings
 import streamlit as st
@@ -83,7 +81,6 @@ with st.sidebar:
     
     st.markdown("""
     <div style='text-align: center; font-size: 0.8rem; color: #999;'>
-        <p>Developed by<br><strong>Daniel Ajayi</strong></p>
         <p>© 2025 All Rights Reserved</p>
     </div>
     """, unsafe_allow_html=True)
@@ -218,9 +215,6 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     st.markdown("""
     <div style='text-align: center; padding: 1rem 0;'>
-        <p style='font-size: 1rem; color: #666;'>
-            Developed by <strong>Daniel Ajayi</strong>
-        </p>
         <p style='color: #999; font-size: 0.9rem;'>
             © 2025 Loan Default Prediction System
         </p>

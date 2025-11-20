@@ -9,7 +9,6 @@ Three Feature Configurations:
 2. hybrid_features() - All datasets combined (487 features)
 3. behaviorial_features() - Behavioral focus (apps + balances)
 
-Author: Daniel Ajayi
 Date: November 2025
 Version: 2.0
 """

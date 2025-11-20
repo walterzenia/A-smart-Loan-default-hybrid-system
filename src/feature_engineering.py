@@ -9,7 +9,6 @@ Pipeline Structure:
 2. Behavioral Features: Payment patterns, spending behavior, utilization
 3. Hybrid Features: Combined features for ensemble model
 
-Author: Daniel Ajayi
 Date: November 2025
 Version: 2.0
 """
