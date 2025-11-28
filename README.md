@@ -725,8 +725,11 @@ Loan Default Hybrid System/
 │   │   └── traditional_features() # Combines all Home Credit datasets (487)
 │   │   └── behavioral_features()  # UCI behavioral pipeline wrapper
 │   │
-│   ├── model_training.py          # Model training pipeline
-│   │   └── train_classifier()     # LightGBM training with CV
+│   ├── train_traditional.py       # Traditional model training script
+│   │   └── Trains Traditional_model.pkl (487 features)
+│   │
+│   ├── train_behaviorial.py       # Behavioral model training script
+│   │   └── Trains Behaviorial_model.pkl (31 features)
 │   │
 │   ├── train_ensemble_hybrid.py   # Ensemble training script
 │   │   └── Creates meta-learner with stacking
@@ -754,8 +757,12 @@ Loan Default Hybrid System/
 ├── src/                           # Source code
 │   ├── data_preprocessing.py      # Data cleaning
 │   ├── feature_engineering.py     # Feature engineering
+│   ├── extract_features.py        # Feature extraction
+│   ├── train_traditional.py       # Traditional model training
+│   ├── train_behaviorial.py       # Behavioral model training
+│   ├── train_ensemble_hybrid.py   # Ensemble training
 │   ├── create_hybrid_features.py  # Hybrid feature generation
-│   └── train_ensemble_hybrid.py   # Ensemble training
+│   └── ensemble_model.py          # Ensemble wrapper class
 │
 ├── apps/                          # Streamlit utilities
 │   └── utils.py                   # Helper functions
