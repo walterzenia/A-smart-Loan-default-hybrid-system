@@ -9,7 +9,7 @@ from .feature_engineering import (
     process_install,
     process_card,
 )
-from .model_training import build_pipeline
+from .train_traditional import build_pipeline
 
 __all__ = [
     "get_dataset",

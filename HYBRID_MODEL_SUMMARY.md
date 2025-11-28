@@ -6,8 +6,8 @@ Successfully created a hybrid ensemble model that combines traditional Home Cred
 
 ## Models Combined
 
-1. **model_hybrid.pkl** - Traditional Home Credit model (487 features)
-2. **first_lgbm_model.pkl** - Behavioral UCI Credit Card model (31 features)
+1. **Traditional_model.pkl** - Traditional Home Credit model (487 features)
+2. **Behaviorial_model.pkl** - Behavioral UCI Credit Card model (31 features)
 3. **model_ensemble_wrapper.pkl** - NEW Ensemble meta-learner (combines both)
 
 ## Feature Engineering
@@ -312,8 +312,8 @@ Loan Default Hybrid System/
 │   ├── train_ensemble_hybrid.py     ← Ensemble training
 │   └── feature_engineering.py       ← Updated with behavioral features
 ├── models/
-│   ├── model_hybrid.pkl              ← Traditional model
-│   ├── first_lgbm_model.pkl          ← Behavioral model
+│   ├── Traditional_model.pkl          ← Traditional model
+│   ├── Behaviorial_model.pkl        ← Behavioral model
 │   ├── model_ensemble_hybrid.pkl     ← NEW: Meta-learner
 │   ├── model_ensemble_wrapper.pkl    ← NEW: Ready-to-use wrapper
 │   └── ensemble_metadata.pkl         ← NEW: Metadata

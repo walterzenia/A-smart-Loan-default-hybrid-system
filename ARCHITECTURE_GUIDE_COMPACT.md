@@ -207,8 +207,8 @@ Loan Default Hybrid System/
 ├── src/
 │   └── feature_engineering.py      # Feature transformations
 ├── models/
-│   ├── model_hybrid.pkl            # Traditional (487)
-│   ├── first_lgbm_model.pkl        # Behavioral (31)
+│   ├── Traditional_model.pkl        # Traditional (487)
+│   ├── Behaviorial_model.pkl      # Behavioral (31)
 │   └── model_ensemble_wrapper.pkl  # Ensemble (518)
 └── data/
     └── [training datasets]

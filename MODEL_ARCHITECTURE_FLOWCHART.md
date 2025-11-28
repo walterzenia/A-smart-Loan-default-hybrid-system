@@ -13,8 +13,8 @@ graph TB
     CSV --> ModelSelect{Select Model Type}
     Form --> ModelSelect
 
-    ModelSelect -->|Traditional| TradModel[Traditional Model<br/>model_hybrid.pkl]
-    ModelSelect -->|Behavioral| BehavModel[Behavioral Model<br/>first_lgbm_model.pkl]
+    ModelSelect -->|Traditional| TradModel[Traditional Model<br/>Traditional_model.pkl]
+    ModelSelect -->|Behavioral| BehavModel[Behavioral Model<br/>Behaviorial_model.pkl]
     ModelSelect -->|Ensemble| EnsModel[Ensemble Model<br/>model_ensemble_wrapper.pkl]
 
     TradModel --> Predict[Make Prediction]
@@ -424,8 +424,8 @@ graph TB
     end
 
     subgraph "Model Layer"
-        M1[model_hybrid.pkl<br/>487 features]
-        M2[first_lgbm_model.pkl<br/>31 features]
+        M1[Traditional_model.pkl<br/>487 features]
+        M2[Behaviorial_model.pkl<br/>31 features]
         M3[model_ensemble_wrapper.pkl<br/>518 features]
     end
 
@@ -476,8 +476,8 @@ graph TB
     end
 
     subgraph "Model Layer"
-        M1[models/model_hybrid.pkl<br/>Traditional LightGBM]
-        M2[models/first_lgbm_model.pkl<br/>Behavioral LightGBM]
+        M1[models/Traditional_model.pkl<br/>Traditional LightGBM]
+        M2[models/Behaviorial_model.pkl<br/>Behavioral LightGBM]
         M3[models/model_ensemble_wrapper.pkl<br/>Ensemble Model]
     end
 
@@ -653,8 +653,8 @@ Loan Default Hybrid System/
 │   └── feature_engineering.py         # Feature engineering functions
 │
 ├── models/                         # Trained models
-│   ├── model_hybrid.pkl               # Traditional model (487 features)
-│   ├── first_lgbm_model.pkl           # Behavioral model (31 features)
+│   ├── Traditional_model.pkl           # Traditional model (487 features)
+│   ├── Behaviorial_model.pkl         # Behavioral model (31 features)
 │   └── model_ensemble_wrapper.pkl     # Ensemble model (518 features)
 │
 └── data/ (optional)                # Training/test data

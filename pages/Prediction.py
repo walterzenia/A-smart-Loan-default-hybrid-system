@@ -175,12 +175,26 @@ def batch_prediction(model, model_name):
                 # Risk distribution
                 if 'Risk Level' in results.columns:
                     st.markdown("####  Risk Distribution")
+                    
+                    # Add explanation table
+                    st.markdown("""
+                    <div style='background-color: #f0f2f6; padding: 10px; border-radius: 5px; margin-bottom: 15px;'>
+                    <table style='width: 100%; font-size: 0.85em; color: black;'>
+                    <tr><th style='text-align: left; color: black;'>Metric</th><th style='text-align: left; color: black;'>Definition</th><th style='text-align: left; color: black;'>Threshold</th></tr>
+                    <tr><td style='color: black;'><strong>Predicted Defaults</strong></td><td style='color: black;'>Binary prediction (will default)</td><td style='color: black;'>Probability ≥ 0.5</td></tr>
+                    <tr><td style='color: black;'><strong>🟢 Low Risk</strong></td><td style='color: black;'>Low probability of default</td><td style='color: black;'>Probability < 0.3</td></tr>
+                    <tr><td style='color: black;'><strong>🟡 Medium Risk</strong></td><td style='color: black;'>Moderate probability of default</td><td style='color: black;'>0.3 ≤ Probability < 0.6</td></tr>
+                    <tr><td style='color: black;'><strong>🔴 High Risk</strong></td><td style='color: black;'>High probability of default</td><td style='color: black;'>Probability ≥ 0.6</td></tr>
+                    </table>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
                     risk_counts = results['Risk Level'].value_counts()
                     
                     col1, col2, col3 = st.columns(3)
-                    col1.metric(" Low Risk", risk_counts.get("Low Risk ", 0))
-                    col2.metric(" Medium Risk", risk_counts.get("Medium Risk ", 0))
-                    col3.metric(" High Risk", risk_counts.get("High Risk ", 0))
+                    col1.metric("🟢 Low Risk", risk_counts.get("Low Risk 🟢", 0))
+                    col2.metric("🟡 Medium Risk", risk_counts.get("Medium Risk 🟡", 0))
+                    col3.metric("🔴 High Risk", risk_counts.get("High Risk 🔴", 0))
                 
                 # Download results
                 st.markdown("---")
@@ -223,13 +237,25 @@ def manual_prediction(model, model_name):
             predictions, probabilities = get_predictions(model, input_data)
             
             if predictions is None:
-                st.error(" Prediction failed. The model may require additional features.")
+                st.error(" Prediction failed due to missing features.")
                 if model_type == 'ensemble':
-                    st.info(" Ensemble model requires both traditional and behavioral features. Upload a CSV file with complete hybrid data.")
+                    st.warning("""
+                    **Why it failed:**  
+                    The ensemble model expects 518 features (487 traditional + 31 behavioral), but manual input provides only ~55 features.
+                    
+                    **Solution:**  
+                    Use **Batch Prediction** mode and upload `smoke_hybrid_features.csv` which contains all required features.
+                    """)
                 elif model_type == 'traditional':
-                    st.info(" Traditional model works best with Home Credit features. For full accuracy, upload `smoke_engineered.csv`.")
+                    st.warning("""
+                    **Why it failed:**  
+                    The traditional model expects 487 features from bureau reports, previous loans, installments, etc., but manual input provides only ~24 features.
+                    
+                    **Solution:**  
+                    Use **Batch Prediction** mode and upload `smoke_engineered.csv` which contains all traditional features.
+                    """)
                 elif model_type == 'behavioral':
-                    st.info(" Behavioral model requires UCI credit card features. For full accuracy, upload `uci_interface_test.csv`.")
+                    st.info(" Behavioral model requires 31 UCI credit card features. For best results, upload `uci_interface_test.csv`.")
                 return
             
             display_prediction_results(predictions, probabilities, model_type)
@@ -405,7 +431,14 @@ def hybrid_input_form():
     """Form for Hybrid (Ensemble) features - combines traditional and behavioral"""
     with st.form("hybrid_form"):
         st.markdown("#### Ensemble Model Features")
-        st.warning("This form combines Traditional + Behavioral features. For best results, use batch prediction with `smoke_hybrid_features.csv`.")
+        st.error("""
+        ⚠️ **Critical Limitation:**  
+        The ensemble model requires **487 traditional features** + **31 behavioral features** (518 total).  
+        This manual form can only provide **~24 traditional + 31 behavioral features** (~55 total).
+        
+        **Result:** Manual predictions will likely fail due to missing features.  
+        **Strongly Recommended:** Use **Batch Prediction** with `smoke_hybrid_features.csv` for ensemble model predictions.
+        """)
         
         st.markdown("##### Traditional Features")
         col1, col2, col3 = st.columns(3)
@@ -533,7 +566,7 @@ def hybrid_input_form():
         # Create separate dataframes for traditional and behavioral
         trad_data = input_data[['EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3', 'AMT_CREDIT', 
                                  'AMT_INCOME_TOTAL', 'AMT_ANNUITY', 'AMT_GOODS_PRICE', 
-                                 'DAYS_BIRTH', 'DAYS_EMPLOYED']].copy()
+                                 'DAYS_BIRTH', 'DAYS_EMPLOYED', 'CNT_FAM_MEMBERS', 'OWN_CAR_AGE']].copy()
         
         behav_data = input_data[['LIMIT_BAL', 'SEX', 'EDUCATION', 'MARRIAGE', 'AGE',
                                   'PAY_0', 'PAY_2', 'PAY_3', 'PAY_4', 'PAY_5', 'PAY_6',

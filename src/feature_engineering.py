@@ -698,8 +698,9 @@ def behaviorial_features(uci: pd.DataFrame) -> pd.DataFrame:
     uci["credit_utilization_trend"] = uci.apply(compute_slope, axis=1)
 
     # CLEAN-UP
-    # Drop intermediate change columns to keep dataset tidy
-    uci.drop(columns=["bill_change_1_2", "bill_change_2_3", "bill_change_3_4", 
-                      "bill_change_4_5", "bill_change_5_6"], inplace=True)
+    # Keep bill_change features - they are required by the behavioral model
+    # (Previously dropped to keep dataset tidy, but model was trained with them)
+    # uci.drop(columns=["bill_change_1_2", "bill_change_2_3", "bill_change_3_4", 
+    #                   "bill_change_4_5", "bill_change_5_6"], inplace=True)
     
     return uci

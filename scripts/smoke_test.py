@@ -18,9 +18,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from src.data_preprocessing import get_dataset
-from src.extract_features import hybrid_features
+from src.extract_features import traditional_features
 from src.config import data_path
-from src.model_training import build_pipeline
+from src.train_traditional import build_pipeline
 import numpy as np
 from sklearn.model_selection import train_test_split
 
@@ -53,7 +53,7 @@ def main():
     card_bal_small = card_bal[card_bal["SK_ID_CURR"].isin(sampled_ids)].copy()
 
     logger.info("Running hybrid feature engineering on sampled subset... this may take a while depending on dataset size")
-    features_df = hybrid_features(apps_small, bureau_small, bureau_bal_small, prev_small, pos_bal_small, install_small, card_bal_small)
+    features_df = traditional_features(apps_small, bureau_small, bureau_bal_small, prev_small, pos_bal_small, install_small, card_bal_small)
 
     out_path = data_path("smoke_engineered.csv")
     logger.info("Saving engineered features to %s", out_path)

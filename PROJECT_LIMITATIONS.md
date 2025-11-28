@@ -18,7 +18,7 @@ This document outlines known limitations, constraints, and considerations for th
 
 #### Limitation Description
 
-The Traditional Model (`model_hybrid.pkl`) requires **487 features** for accurate predictions, but the manual form interface can only capture **24 features** (4.9% of required features).
+The Traditional Model (`Traditional_model.pkl`) requires **487 features** for accurate predictions, but the manual form interface can only capture **24 features** (4.9% of required features).
 
 #### Root Cause
 

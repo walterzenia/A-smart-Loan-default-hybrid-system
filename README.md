@@ -68,8 +68,7 @@ This project implements a sophisticated loan default prediction system that leve
 │                                                              │
 │  src/extract_features.py - Feature Orchestration           │
 │  • traditional_features()- Combines apps + prev + bureau    │
-│  • hybrid_features()     - All features (487 total)         │
-│  • behaviorial_features()- Behavioral pipeline              │
+│  • behavioral_features() - Behavioral pipeline              │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -250,7 +249,7 @@ def behaviorial_features(uci: pd.DataFrame) -> pd.DataFrame:
 
 ### Model 1: Traditional Model
 
-**File**: `models/model_hybrid.pkl`
+**File**: `models/Traditional_model.pkl`
 
 **Features**: 487 traditional features from Home Credit data
 
@@ -284,7 +283,7 @@ params = {
 
 ### Model 2: Behavioral Model
 
-**File**: `models/first_lgbm_model.pkl`
+**File**: `models/Behaviorial_model.pkl`
 
 **Features**: 31 behavioral features from UCI Credit Card dataset
 
@@ -324,9 +323,9 @@ params = {
 
 ```
 Level 0 (Base Models):
-├─ Traditional Model (model_hybrid.pkl)
+├─ Traditional Model (Traditional_model.pkl)
 │  └─ 487 features → probability_traditional
-└─ Behavioral Model (first_lgbm_model.pkl)
+└─ Behavioral Model (Behaviorial_model.pkl)
    └─ 31 features → probability_behavioral
 
 Level 1 (Meta Features):
@@ -531,8 +530,8 @@ Ensure these files exist in `data/`:
 
 Ensure these files exist in `models/`:
 
-- `model_hybrid.pkl`
-- `first_lgbm_model.pkl`
+- `Traditional_model.pkl`
+- `Behaviorial_model.pkl`
 - `model_ensemble_wrapper.pkl`
 
 ---
@@ -699,8 +698,8 @@ Loan Default Hybrid System/
 │   └── bureau.csv, previous_application.csv, etc.
 │
 ├── models/                        # Trained models
-│   ├── model_hybrid.pkl           # Traditional model (7.69 MB, 487 features)
-│   ├── first_lgbm_model.pkl       # Behavioral model (1.05 MB, 31 features)
+│   ├── Traditional_model.pkl       # Traditional model (7.69 MB, 487 features)
+│   ├── Behaviorial_model.pkl      # Behavioral model (1.05 MB, 31 features)
 │   ├── model_ensemble_wrapper.pkl # Ensemble wrapper (8.91 MB)
 │   ├── model_ensemble_hybrid.pkl  # Raw meta-learner
 │   └── ensemble_metadata.pkl      # Ensemble configuration
@@ -723,9 +722,8 @@ Loan Default Hybrid System/
 │   │   └── behaviorial_features() # UCI behavioral pipeline
 │   │
 │   ├── extract_features.py        # Feature orchestration layer
-│   │   └── traditional_features() # Combines apps + prev + bureau (487)
-│   │   └── hybrid_features()      # All feature sets combined (487)
-│   │   └── behaviorial_features() # Behavioral pipeline wrapper
+│   │   └── traditional_features() # Combines all Home Credit datasets (487)
+│   │   └── behavioral_features()  # UCI behavioral pipeline wrapper
 │   │
 │   ├── model_training.py          # Model training pipeline
 │   │   └── train_classifier()     # LightGBM training with CV
@@ -747,8 +745,8 @@ Loan Default Hybrid System/
 │   └── uci_hybrid_features.csv    # Hybrid features (UCI)
 │
 ├── models/                        # Trained models
-│   ├── model_hybrid.pkl           # Traditional model (487 features)
-│   ├── first_lgbm_model.pkl       # Behavioral model (31 features)
+│   ├── Traditional_model.pkl       # Traditional model (487 features)
+│   ├── Behaviorial_model.pkl      # Behavioral model (31 features)
 │   ├── model_ensemble_hybrid.pkl  # Meta-learner (stacking)
 │   ├── model_ensemble_wrapper.pkl # Complete ensemble
 │   └── ensemble_metadata.pkl      # Feature metadata

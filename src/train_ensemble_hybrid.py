@@ -1,7 +1,7 @@
 """
 Train an ensemble hybrid model combining:
-1. model_hybrid.pkl (traditional Home Credit features)
-2. first_lgbm_model.pkl (behavioral UCI Credit Card features)
+1. Traditional_model.pkl (traditional Home Credit features)
+2. Behaviorial_model.pkl (behavioral UCI Credit Card features)
 
 This creates a true hybrid model that leverages both feature sets.
 """
@@ -23,11 +23,11 @@ def load_models():
     """Load both pre-trained models"""
     models_dir = Path(__file__).parent.parent / "models"
     
-    model_traditional = joblib.load(models_dir / "model_hybrid.pkl")
-    model_behavioral = joblib.load(models_dir / "first_lgbm_model.pkl")
+    model_traditional = joblib.load(models_dir / "Traditional_model.pkl")
+    model_behavioral = joblib.load(models_dir / "Behaviorial_model.pkl")
     
-    print("✓ Loaded model_hybrid.pkl (traditional features)")
-    print("✓ Loaded first_lgbm_model.pkl (behavioral features)")
+    print("✓ Loaded Traditional_model.pkl (traditional features)")
+    print("✓ Loaded Behaviorial_model.pkl (behavioral features)")
     
     return model_traditional, model_behavioral
 
@@ -47,9 +47,11 @@ def load_hybrid_data():
 
 def prepare_feature_sets(df, model_traditional, model_behavioral):
     """
-    Separate features for each model based on their expected inputs
+    Separate features for each model based on their expected inputs.
+    Keep all features the models were trained with (including IDs for prediction),
+    but we'll exclude IDs when selecting key features for meta-learning.
     """
-    # Get feature names each model expects
+    # Get feature names each model expects (keep ALL features they were trained with)
     if hasattr(model_traditional, 'feature_names_in_'):
         traditional_features = list(model_traditional.feature_names_in_)
     elif hasattr(model_traditional, 'feature_name_'):
@@ -57,7 +59,7 @@ def prepare_feature_sets(df, model_traditional, model_behavioral):
     else:
         # Fallback: assume original smoke columns
         traditional_features = [col for col in df.columns if not col.startswith('BILL_') and 
-                               not col.startswith('PAY_') and col not in ['TARGET', 'SK_ID_CURR']]
+                               not col.startswith('PAY_') and col not in ['TARGET']]
     
     if hasattr(model_behavioral, 'feature_names_in_'):
         behavioral_features = list(model_behavioral.feature_names_in_)
@@ -72,9 +74,21 @@ def prepare_feature_sets(df, model_traditional, model_behavioral):
             'max_to_mean', 'missed_payment', 'credit_utilization_trend'
         ])]
     
-    # Ensure features exist in dataframe
-    traditional_features = [f for f in traditional_features if f in df.columns]
-    behavioral_features = [f for f in behavioral_features if f in df.columns]
+    # Add missing features to dataframe (filled with 0) to match what models expect
+    missing_trad = [f for f in traditional_features if f not in df.columns]
+    missing_behav = [f for f in behavioral_features if f not in df.columns]
+    
+    if missing_trad:
+        print(f"\n⚠ Adding {len(missing_trad)} missing traditional features (filled with 0)")
+        for feat in missing_trad:
+            df[feat] = 0
+            print(f"  - {feat}")
+    
+    if missing_behav:
+        print(f"\n⚠ Adding {len(missing_behav)} missing behavioral features (filled with 0)")
+        for feat in missing_behav:
+            df[feat] = 0
+            print(f"  - {feat}")
     
     print(f"\nTraditional features: {len(traditional_features)}")
     print(f"Behavioral features: {len(behavioral_features)}")
@@ -88,7 +102,7 @@ def create_meta_features(df, model_traditional, model_behavioral,
     """
     print("\nGenerating meta-features from base models...")
     
-    # Prepare feature sets
+    # Prepare feature sets (features already added in prepare_feature_sets)
     X_traditional = df[traditional_features].copy()
     X_behavioral = df[behavioral_features].copy()
     
@@ -143,9 +157,15 @@ def create_meta_features(df, model_traditional, model_behavioral,
         'pred_ratio': pred_traditional / (pred_behavioral + 0.001)
     })
     
-    # Add some key features from both models
-    key_traditional = traditional_features[:10] if len(traditional_features) >= 10 else traditional_features
-    key_behavioral = behavioral_features[:10] if len(behavioral_features) >= 10 else behavioral_features
+    # Add some key features from both models (excluding ID columns)
+    exclude_cols = ['SK_ID_CURR', 'SK_ID_PREV', 'SK_ID_BUREAU', 'ID', 'index']
+    
+    # Filter out ID columns before selecting key features
+    filtered_traditional = [f for f in traditional_features if f not in exclude_cols]
+    filtered_behavioral = [f for f in behavioral_features if f not in exclude_cols]
+    
+    key_traditional = filtered_traditional[:10] if len(filtered_traditional) >= 10 else filtered_traditional
+    key_behavioral = filtered_behavioral[:10] if len(filtered_behavioral) >= 10 else filtered_behavioral
     
     for feat in key_traditional:
         if feat in X_traditional.columns:
@@ -156,6 +176,8 @@ def create_meta_features(df, model_traditional, model_behavioral,
             meta_features[f'behav_{feat}'] = X_behavioral[feat].values
     
     print(f"✓ Created {meta_features.shape[1]} meta-features")
+    print(f"✓ Using {len(key_traditional)} key traditional features (excluding IDs)")
+    print(f"✓ Using {len(key_behavioral)} key behavioral features (excluding IDs)")
     
     return meta_features
 
@@ -234,8 +256,8 @@ def save_ensemble_model(model, model_traditional, model_behavioral,
     metadata = {
         'traditional_features': traditional_features,
         'behavioral_features': behavioral_features,
-        'traditional_model_path': 'models/model_hybrid.pkl',
-        'behavioral_model_path': 'models/first_lgbm_model.pkl',
+        'traditional_model_path': 'models/Traditional_model.pkl',
+        'behavioral_model_path': 'models/Behavioral_model.pkl',
         'ensemble_type': 'stacking',
         'meta_learner': 'LightGBM'
     }

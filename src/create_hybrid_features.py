@@ -269,7 +269,7 @@ def main():
     print("HYBRID FEATURE CREATION COMPLETED!")
     print("="*60)
     print("\nNext steps:")
-    print("1. Use smoke_hybrid_features.csv with both model_hybrid.pkl and first_lgbm_model.pkl")
+    print("1. Use smoke_hybrid_features.csv with both Traditional_model.pkl and Behaviorial_model.pkl")
     print("2. Create ensemble predictions by combining outputs from both models")
     print("3. Train a meta-learner (stacking) if needed for optimal weight combination")
 

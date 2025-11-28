@@ -17,12 +17,18 @@ class EnsembleHybridModel:
         self.meta_model = meta_model
         self.model_traditional = model_trad
         self.model_behavioral = model_behav
-        self.traditional_features = trad_feats
-        self.behavioral_features = behav_feats
+        self.traditional_features = trad_feats  # Keep ALL features including IDs for base model predictions
+        self.behavioral_features = behav_feats   # Keep ALL features including IDs for base model predictions
         
-        # Store key features used in meta-model training
-        self.key_traditional = trad_feats[:10] if len(trad_feats) >= 10 else trad_feats
-        self.key_behavioral = behav_feats[:10] if len(behav_feats) >= 10 else behav_feats
+        # Define ID columns to exclude ONLY from meta-features (not from base model predictions)
+        exclude_cols = ['SK_ID_CURR', 'SK_ID_PREV', 'SK_ID_BUREAU', 'ID', 'index']
+        
+        # Store key features used in meta-model training (excluding ID columns)
+        filtered_trad = [f for f in trad_feats if f not in exclude_cols]
+        filtered_behav = [f for f in behav_feats if f not in exclude_cols]
+        
+        self.key_traditional = filtered_trad[:10] if len(filtered_trad) >= 10 else filtered_trad
+        self.key_behavioral = filtered_behav[:10] if len(filtered_behav) >= 10 else filtered_behav
     
     def predict_proba(self, X):
         """Predict probabilities using the ensemble"""

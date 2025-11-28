@@ -310,8 +310,8 @@ Visual categorization for quick decision-making:
 
 1. Navigate to "Model Metrics" from sidebar
 2. Select model from dropdown:
-   - model_hybrid.pkl (Traditional)
-   - first_lgbm_model.pkl (Behavioral)
+   - Traditional_model.pkl (Traditional)
+   - Behaviorial_model.pkl (Behavioral)
    - model_ensemble_hybrid.pkl (Ensemble)
 
 #### Performance Metrics Explained
@@ -644,8 +644,8 @@ Understand which features drive model decisions
 
 **Model Files:**
 
-- `models/model_hybrid.pkl` - Traditional model
-- `models/first_lgbm_model.pkl` - Behavioral model
+- `models/Traditional_model.pkl` - Traditional model
+- `models/Behaviorial_model.pkl` - Behavioral model
 - `models/model_ensemble_hybrid.pkl` - Ensemble meta-model
 - `models/model_ensemble_wrapper.pkl` - Ensemble wrapper
 - `models/ensemble_metadata.pkl` - Feature metadata

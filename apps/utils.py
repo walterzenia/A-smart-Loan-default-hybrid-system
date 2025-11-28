@@ -61,8 +61,8 @@ def get_available_models():
     
     # Only show these 3 specific models
     target_models = [
-        'model_hybrid.pkl',          # Traditional model
-        'first_lgbm_model.pkl',      # Behavioral model
+        'Traditional_model.pkl',      # Traditional model
+        'Behaviorial_model.pkl',      # Behavioral model
         'model_ensemble_wrapper.pkl' # Ensemble model
     ]
     
