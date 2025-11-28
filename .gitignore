@@ -49,6 +49,15 @@ CODE_QUALITY_IMPROVEMENTS.md
 .coverage
 htmlcov/
 
+# Large training data files (not needed for deployed app)
+data/application_train.csv
+data/bureau.csv
+data/previous_application.csv
+data/bureau_balance.csv
+data/POS_CASH_balance.csv
+data/installments_payments.csv
+data/credit_card_balance.csv
+
 # Environment variables
 .env
 .env.local

@@ -1,15 +1,4 @@
-# Track only very large CSV files with LFS
-# Excluded: HomeCredit_columns_description.csv, smoke_engineered.csv, UCI_Credit_Card.csv
-# uci_interface_test.csv, smoke_hybrid_features.csv, uci_hybrid_features.csv
-# These are needed for Streamlit Cloud deployment
+# No LFS - Streamlit Cloud has authentication issues with Git LFS
+# Large training files (application_train.csv, bureau.csv, previous_application.csv) 
+# are excluded via .gitignore as they're not needed for the deployed app
 
-# Large files only
-data/application_train.csv filter=lfs diff=lfs merge=lfs -text
-data/bureau.csv filter=lfs diff=lfs merge=lfs -text
-data/previous_application.csv filter=lfs diff=lfs merge=lfs -text
-data/HomeCredit_columns_description.csv !text !filter !merge !diff
-data/smoke_engineered.csv !text !filter !merge !diff
-data/UCI_Credit_Card.csv !text !filter !merge !diff
-data/uci_interface_test.csv !text !filter !merge !diff
-data/smoke_hybrid_features.csv !text !filter !merge !diff
-data/uci_hybrid_features.csv !text !filter !merge !diff
