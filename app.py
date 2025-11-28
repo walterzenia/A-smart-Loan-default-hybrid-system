@@ -118,7 +118,7 @@ with col1:
     - **Single Applicant Analysis**: Manual input for individual loan evaluation
     - **Interactive Visualizations**: Explore data patterns with dynamic charts
     - **Model Interpretability**: SHAP-based explanations for transparency
-    - ** Ensemble Hybrid Model**: Best performance combining Traditional + Behavioral features
+    - **Ensemble Hybrid Model**: Best performance combining Traditional + Behavioral features
     """)
 
 with col2:
