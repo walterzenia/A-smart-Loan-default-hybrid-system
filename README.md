@@ -81,7 +81,7 @@ This project implements a sophisticated loan default prediction system that leve
 │  .pkl            │   _model.pkl     │  _wrapper.pkl        │
 │                  │                  │                      │
 │  487 features    │   31 features    │  Meta-learner        │
-│  AUC: ~0.75      │   AUC: ~0.76     │  AUC: 0.8591        │
+│  AUC: ~0.75      │   AUC: ~0.76     │  AUC: 0.8577        │
 └──────────────────┴──────────────────┴──────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -363,18 +363,18 @@ ensemble = EnsembleHybridModel(meta_model, model_trad, model_behav)
 **Performance**:
 
 ```
-AUC-ROC: 0.8591
+AUC-ROC: 0.8577
 
 Classification Report:
               precision    recall  f1-score   support
-         0.0       0.93      1.00      0.96      3198
-         1.0       0.66      0.09      0.16       270
+         0.0       0.93      0.99      0.96      3198
+         1.0       0.62      0.14      0.23       270
 
     accuracy                           0.93      3468
 
 Confusion Matrix:
-[[3185   13]
- [ 245   25]]
+[[3175   23]
+ [ 232   38]]
 ```
 
 **Key Improvements**:
@@ -618,7 +618,7 @@ risks = [classify_risk(p) for p in probabilities]
 | ------------------- | -------- | ---------- | --------- | -------- | -------- | ----------------------------- |
 | **Traditional**     | 487      | 0.7500     | 0.68      | 0.45     | 0.54     | Standard credit assessment    |
 | **Behavioral**      | 31       | 0.7600     | 0.71      | 0.42     | 0.53     | Payment behavior analysis     |
-| **Ensemble Hybrid** | 518      | **0.8591** | **0.66**  | **0.09** | **0.16** | Comprehensive risk assessment |
+| **Ensemble Hybrid** | 518      | **0.8577** | **0.62**  | **0.14** | **0.23** | Comprehensive risk assessment |
 
 ### Performance Highlights
 

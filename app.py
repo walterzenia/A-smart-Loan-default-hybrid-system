@@ -181,7 +181,7 @@ optimized for high performance and accuracy.
 **Available Models:**
 - **Traditional Features**: Credit history, income, demographics (AUC: ~0.75)
 - **Behavioral Features**: Payment patterns, spending behavior (AUC: ~0.76)
-- ** Ensemble Hybrid**: Combined traditional + behavioral **(AUC: 0.8591 - Best Performance!)**
+- ** Ensemble Hybrid**: Combined traditional + behavioral **(AUC: 0.8577 - Best Performance!)**
 """)
 
 st.markdown("---")

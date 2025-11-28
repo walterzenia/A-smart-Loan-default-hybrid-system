@@ -252,19 +252,19 @@ meta_model.fit(meta_features, y)
 | ----------------------- | ---------- | --------- | -------- | -------- |
 | Traditional alone       | 0.75       | 0.58      | 0.12     | 0.20     |
 | Behavioral alone        | 0.76       | 0.61      | 0.11     | 0.19     |
-| **Ensemble (Stacking)** | **0.8591** | **0.66**  | **0.09** | **0.16** |
+| **Ensemble (Stacking)** | **0.8577** | **0.62**  | **0.14** | **0.23** |
 
 **Performance Gain**: **+14% AUC improvement** over best single model
 
 ### Model Performance
 
-- **AUC-ROC**: 0.8591
+- **AUC-ROC**: 0.8577
 - **Accuracy**: 93%
-- **Precision**: 0.66 (class 1)
-- **Recall**: 0.09 (class 1)
-- **F1-Score**: 0.16 (class 1)
+- **Precision**: 0.62 (class 1)
+- **Recall**: 0.14 (class 1)
+- **F1-Score**: 0.23 (class 1)
 
-**Note**: Model is conservative with high precision but low recall for defaults (class 1). This means it's accurate when it predicts default but misses many actual defaults.
+**Note**: Model is conservative with moderate precision and low recall for defaults (class 1). This means it's fairly accurate when it predicts default but still misses many actual defaults.
 
 ### Confusion Matrix
 
