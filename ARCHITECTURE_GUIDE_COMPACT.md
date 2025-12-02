@@ -28,11 +28,12 @@ graph TB
 
 ### 1. Traditional Model (Home Credit)
 
-**Input:** 7 Home Credit datasets → **Process:** Feature engineering → **Output:** 487 features
+**Input:** 7 Home Credit datasets → **Process:** Data cleaning + Feature engineering → **Output:** 487 features
 
 ```mermaid
 graph LR
-    A[7 Datasets<br/>Home Credit] --> B[traditional_features<br/>Engineering]
+    A[7 Datasets<br/>Home Credit] --> A1[data_cleaning.py<br/>Clean & Impute]
+    A1 --> B[traditional_features<br/>Engineering]
     B --> C[487<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
@@ -54,11 +55,12 @@ graph LR
 
 ### 2. Behavioral Model (UCI Credit Card)
 
-**Input:** 1 UCI dataset (23 columns) → **Process:** Feature engineering → **Output:** 31 features
+**Input:** 1 UCI dataset (23 columns) → **Process:** Data cleaning + Feature engineering → **Output:** 31 features
 
 ```mermaid
 graph LR
-    A[1 Dataset<br/>23 Columns] --> B[behavioral_features<br/>Engineering]
+    A[1 Dataset<br/>23 Columns] --> A1[data_cleaning.py<br/>Clean & Impute]
+    A1 --> B[behavioral_features<br/>Engineering]
     B --> C[31<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
@@ -77,11 +79,12 @@ graph LR
 
 ### 3. Ensemble Model (Hybrid)
 
-**Input:** 8 datasets (7 Home Credit + 1 UCI) → **Process:** Both pipelines → **Output:** 518 features
+**Input:** 8 datasets (7 Home Credit + 1 UCI) → **Process:** Data cleaning + Both pipelines → **Output:** 518 features
 
 ```mermaid
 graph TB
-    A[8 Combined<br/>Datasets] --> Split{Split}
+    A[8 Combined<br/>Datasets] --> Clean[data_cleaning.py<br/>Clean & Impute]
+    Clean --> Split{Split}
 
     Split --> T[7 Home Credit]
     Split --> B[1 UCI]

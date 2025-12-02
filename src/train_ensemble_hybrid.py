@@ -106,18 +106,14 @@ def create_meta_features(df, model_traditional, model_behavioral,
     X_traditional = df[traditional_features].copy()
     X_behavioral = df[behavioral_features].copy()
     
-    # Fill missing values - handle numeric and categorical separately
-    for col in X_traditional.columns:
-        if X_traditional[col].dtype in ['object', 'category']:
-            X_traditional[col] = X_traditional[col].fillna('MISSING')
-        else:
-            X_traditional[col] = X_traditional[col].fillna(X_traditional[col].median())
+    # Fill missing values using centralized data cleaning
+    from src.data_cleaning import impute_categorical_columns, impute_numeric_columns
     
-    for col in X_behavioral.columns:
-        if X_behavioral[col].dtype in ['object', 'category']:
-            X_behavioral[col] = X_behavioral[col].fillna('MISSING')
-        else:
-            X_behavioral[col] = X_behavioral[col].fillna(X_behavioral[col].median())
+    X_traditional = impute_categorical_columns(X_traditional, fill_value='MISSING')
+    X_traditional = impute_numeric_columns(X_traditional, strategy='median')
+    
+    X_behavioral = impute_categorical_columns(X_behavioral, fill_value='MISSING')
+    X_behavioral = impute_numeric_columns(X_behavioral, strategy='median')
     
     # Encode categorical variables
     from sklearn.preprocessing import LabelEncoder

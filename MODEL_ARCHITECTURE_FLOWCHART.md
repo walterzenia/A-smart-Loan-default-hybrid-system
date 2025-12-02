@@ -37,7 +37,8 @@ graph TB
 
 ```mermaid
 graph LR
-    A[Raw Input<br/>7 Datasets] --> B[Feature Engineering<br/>traditional_features]
+    A[Raw Input<br/>7 Datasets] --> A1[Data Cleaning<br/>data_cleaning.py]
+    A1 --> B[Feature Engineering<br/>traditional_features]
     B --> C[Engineered Data<br/>487 Features]
     C --> D[Traditional Model<br/>LightGBM]
     D --> E[Prediction Output<br/>Default Probability]
@@ -79,7 +80,8 @@ graph LR
 
 ```mermaid
 graph LR
-    A[Raw Input<br/>1 Dataset with 23 Columns] --> B[Feature Engineering<br/>behavioral_features]
+    A[Raw Input<br/>1 Dataset with 23 Columns] --> A1[Data Cleaning<br/>data_cleaning.py]
+    A1 --> B[Feature Engineering<br/>behavioral_features]
     B --> C[Engineered Data<br/>31 Features]
     C --> D[Behavioral Model<br/>LightGBM]
     D --> E[Prediction Output<br/>Default Probability]

@@ -142,7 +142,6 @@ git push
 
 ## Repository Size Summary
 
-**Without large files**: ~150 MB (GitHub-friendly )  
-**With large files**: ~2.7 GB (Requires Git LFS or external storage)
+**Without large files**: ~150 MB (GitHub-friendly )  **With large files**: ~2.7 GB (Requires Git LFS or external storage)
 
 **Recommendation**: Keep large files excluded, provide Kaggle download link in README.

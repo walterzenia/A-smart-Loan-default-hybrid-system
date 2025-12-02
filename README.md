@@ -125,7 +125,56 @@ pos, installments, credit_card = get_balance_data()
 
 ---
 
-### 2. Feature Engineering
+### 2. Data Cleaning & Preprocessing
+
+**Location**: `src/data_cleaning.py`
+
+**Centralized Module**: All data cleaning and missing value handling is consolidated in a single module for consistency across the entire codebase.
+
+**Key Functions**:
+
+```python
+from src.data_cleaning import clean_dataframe, prepare_prediction_data
+
+# For training data
+df_clean = clean_dataframe(
+    df,
+    target_column='TARGET',
+    drop_ids=True,
+    handle_placeholders=True,
+    numeric_strategy='median'
+)
+
+# For prediction data
+X_clean = prepare_prediction_data(
+    X,
+    expected_features=model.feature_names_in_,
+    categorical_fill='MISSING',
+    numeric_strategy='median'
+)
+```
+
+**Cleaning Strategies**:
+
+- **ID Columns**: Automatically removed (ID, SK_ID_CURR, etc.)
+- **Target Column**: Rows with missing targets are dropped
+- **Placeholder Values**: 365243 → NaN
+- **Infinity Values**: ±∞ → NaN
+- **Categorical Missing**: Filled with 'MISSING'
+- **Numeric Missing**: Imputed with median (fallback to 0)
+- **Missing Features**: Added with default value 0
+- **Feature Alignment**: Ensures prediction data matches model expectations
+
+**Used Throughout**:
+
+- Training scripts (`train_traditional.py`, `train_behaviorial.py`)
+- Ensemble training (`train_ensemble_hybrid.py`)
+- Prediction pipeline (`apps/utils.py`)
+- Ensemble predictions (`ensemble_model.py`)
+
+---
+
+### 3. Feature Engineering
 
 **Architecture**: Two-layer feature pipeline
 
@@ -713,6 +762,14 @@ Loan Default Hybrid System/
 │   │   └── get_dataset()          # Loads all Home Credit CSVs
 │   │   └── get_balance_data()     # Loads balance histories
 │   │
+│   ├── data_cleaning.py           # Centralized data cleaning & imputation
+│   │   └── clean_dataframe()      # Complete cleaning pipeline
+│   │   └── prepare_prediction_data() # Clean & align for predictions
+│   │   └── impute_numeric_columns() # Median/mean/zero imputation
+│   │   └── impute_categorical_columns() # Fill with 'MISSING'
+│   │   └── drop_id_columns()      # Remove ID columns
+│   │   └── align_features()       # Add/remove/reorder features
+│   │
 │   ├── feature_engineering.py     # Core feature transformation functions
 │   │   └── process_apps()         # Application features (13)
 │   │   └── process_prev()         # Previous loan features
@@ -756,7 +813,8 @@ Loan Default Hybrid System/
 │   └── ensemble_metadata.pkl      # Feature metadata
 │
 ├── src/                           # Source code
-│   ├── data_preprocessing.py      # Data cleaning
+│   ├── data_preprocessing.py      # Data loading
+│   ├── data_cleaning.py           # Centralized data cleaning & imputation
 │   ├── feature_engineering.py     # Feature engineering
 │   ├── extract_features.py        # Feature extraction
 │   ├── train_traditional.py       # Traditional model training

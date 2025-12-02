@@ -42,6 +42,9 @@ def simulate_behavioral_features_for_smoke(smoke_df):
     else:
         behavioral_sim['LIMIT_BAL'] = np.random.uniform(10000, 500000, len(smoke_df))
     
+    # Import data cleaning utilities
+    from src.data_cleaning import impute_numeric_columns
+    
     # SEX: 1=male, 2=female
     if 'CODE_GENDER' in smoke_df.columns:
         behavioral_sim['SEX'] = smoke_df['CODE_GENDER'].map({'M': 1, 'F': 2}).fillna(1)

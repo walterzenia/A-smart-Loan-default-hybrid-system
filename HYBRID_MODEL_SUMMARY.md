@@ -286,7 +286,9 @@ Default          245      |    25
 ### 2. model_ensemble_wrapper.pkl (RECOMMENDED)
 
 - Complete wrapper class with preprocessing
-- Handles missing values and categorical encoding
+- Uses centralized `src/data_cleaning.py` module for data cleaning
+- Handles missing values via `impute_categorical_columns()` and `impute_numeric_columns()`
+- Handles categorical encoding automatically
 - Ready-to-use with single function call
 - Usage:
 

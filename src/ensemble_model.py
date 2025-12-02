@@ -36,22 +36,26 @@ class EnsembleHybridModel:
         X_trad = X[self.traditional_features].copy()
         X_behav = X[self.behavioral_features].copy()
         
-        # Handle missing and categorical
+        # Handle missing values using centralized data cleaning
+        from src.data_cleaning import impute_categorical_columns, impute_numeric_columns
+        
+        X_trad = impute_categorical_columns(X_trad, fill_value='MISSING')
+        X_trad = impute_numeric_columns(X_trad, strategy='median')
+        
+        # Encode categorical after imputation
         for col in X_trad.columns:
             if X_trad[col].dtype in ['object', 'category']:
-                X_trad[col] = X_trad[col].fillna('MISSING')
                 le = LabelEncoder()
                 X_trad[col] = le.fit_transform(X_trad[col].astype(str))
-            else:
-                X_trad[col] = X_trad[col].fillna(X_trad[col].median())
         
+        X_behav = impute_categorical_columns(X_behav, fill_value='MISSING')
+        X_behav = impute_numeric_columns(X_behav, strategy='median')
+        
+        # Encode categorical after imputation
         for col in X_behav.columns:
             if X_behav[col].dtype in ['object', 'category']:
-                X_behav[col] = X_behav[col].fillna('MISSING')
                 le = LabelEncoder()
                 X_behav[col] = le.fit_transform(X_behav[col].astype(str))
-            else:
-                X_behav[col] = X_behav[col].fillna(X_behav[col].median())
         
         # Get base model predictions
         try:

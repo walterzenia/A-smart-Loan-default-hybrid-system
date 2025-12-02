@@ -115,29 +115,17 @@ def align_features(X, model):
         else:
             expected = list(X.columns)
         
-        # Add missing columns with appropriate fill values
-        missing = [c for c in expected if c not in X.columns]
-        if len(missing) > 0:
-            print(f"[ALIGN_FEATURES] Adding {len(missing)} missing features with default values (0)")
-            # Use dict to create all missing columns at once (avoids fragmentation warnings)
-            missing_dict = {c: 0 for c in missing}
-            missing_df = pd.DataFrame(missing_dict, index=X.index)
-            X = pd.concat([X, missing_df], axis=1)
+        # Use centralized data cleaning module for alignment and imputation
+        from src.data_cleaning import align_features as align_fn, handle_infinities, impute_numeric_columns
         
-        # Keep only expected columns
-        X = X[expected]
+        # Handle infinities
+        X = handle_infinities(X)
         
-        # Handle missing values and infinities
-        X = X.replace([np.inf, -np.inf], np.nan)
+        # Align features with expected features
+        X = align_fn(X, expected, fill_value=0)
         
-        # Fill numeric columns with 0 (for manual input forms)
-        for col in X.columns:
-            if X[col].dtype in [np.float64, np.float32, np.int64, np.int32]:
-                if X[col].isnull().any():
-                    median_val = X[col].median()
-                    if pd.isna(median_val):
-                        median_val = 0
-                    X[col] = X[col].fillna(median_val)
+        # Impute numeric columns
+        X = impute_numeric_columns(X, strategy='median')
         
         return X
     except Exception as e:

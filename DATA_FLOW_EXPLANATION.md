@@ -24,7 +24,7 @@ User fills form → Submit button clicked → Input data created
 
 ### **Behavioral Model Expects 31 Features:**
 
-#### Base Features (11 features) -  We provide these:
+#### Base Features (11 features) - We provide these:
 
 1. LIMIT_BAL
 2. SEX
@@ -104,7 +104,7 @@ def behavioral_input_form():
         return input_data, True
 ```
 
-### Option 2: Apply in get_predictions()  POSSIBLE
+### Option 2: Apply in get_predictions() POSSIBLE
 
 **Modify utils.py:**
 
@@ -118,7 +118,7 @@ def get_predictions(model, X):
     # Then proceed with predictions...
 ```
 
-### Option 3: Create Wrapper Function  ALTERNATIVE
+### Option 3: Create Wrapper Function ALTERNATIVE
 
 ```python
 def prepare_features_for_prediction(X, model_type):
@@ -133,20 +133,34 @@ def prepare_features_for_prediction(X, model_type):
 
 ---
 
-## Current align_features() Behavior:
+## Current System Behavior:
 
-The `align_features()` function:
+The system now uses a **centralized data cleaning module** (`src/data_cleaning.py`) that handles missing values consistently:
 
-1. Gets expected features from model (31 features)
-2. Finds missing features (20 engineered features)
-3. **Fills missing with NaN** ❌
-4. Replaces NaN with 0 or median ❌
+**The `align_features()` function:**
 
-**Result:** Model gets zeros for 20 features instead of calculated values!
+1. Gets expected features from model (e.g., 31 features for behavioral)
+2. Finds missing features (e.g., 20 engineered features)
+3. **Uses `data_cleaning.py` functions:**
+   - `handle_infinities()` - Replaces ±∞ with NaN
+   - `align_features()` - Adds missing columns with default value 0
+   - `impute_numeric_columns()` - Fills NaN with median (fallback to 0)
+   - `impute_categorical_columns()` - Fills NaN with 'MISSING'
+4. Returns cleaned and aligned DataFrame
+
+**Data Cleaning Module Location:** `src/data_cleaning.py`
+
+**Used in:**
+
+- `apps/utils.py` - Prediction pipeline
+- `src/train_traditional.py` - Traditional model training
+- `src/train_behaviorial.py` - Behavioral model training
+- `src/train_ensemble_hybrid.py` - Ensemble training
+- `src/ensemble_model.py` - Ensemble predictions
 
 ---
 
-## Recommended Fix:
+## Recommended Fix for Feature Engineering:
 
 **Update behavioral_input_form() to apply feature engineering:**
 

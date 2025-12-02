@@ -90,14 +90,12 @@ def main():
         logger.error("Target column '%s' not found in features", args.target)
         raise SystemExit(f"Target column '{args.target}' not found")
 
-    df = features_df.dropna(subset=[args.target])
+    # Use centralized data cleaning
+    from src.data_cleaning import drop_id_columns, clean_target_column
     
-    # Drop ID column if it exists
-    id_columns = ['ID', 'id', 'Id', 'SK_ID_CURR', 'SK_ID_PREV', 'SK_ID_BUREAU']
-    for id_col in id_columns:
-        if id_col in df.columns:
-            logger.info("Dropping ID column: %s", id_col)
-            df = df.drop(id_col, axis=1)
+    df = features_df
+    df = drop_id_columns(df)
+    df = clean_target_column(df, args.target)
     
     feature_cols = [c for c in df.columns if c != args.target]
     
