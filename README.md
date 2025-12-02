@@ -80,7 +80,8 @@ This project implements a sophisticated loan default prediction system that leve
 │  model_hybrid    │   first_lgbm     │  model_ensemble      │
 │  .pkl            │   _model.pkl     │  _wrapper.pkl        │
 │                  │                  │                      │
-│  487 features    │   31 features    │  Meta-learner        │
+│  7 datasets →    │   1 dataset →    │  Meta-learner        │
+│  487 features    │   31 features    │  Combined features   │
 │  AUC: ~0.75      │   AUC: ~0.76     │  AUC: 0.8577        │
 └──────────────────┴──────────────────┴──────────────────────┘
                             ↓

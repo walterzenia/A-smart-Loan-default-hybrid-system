@@ -39,7 +39,7 @@ def parse_args():
     return p.parse_args()
 
 
-def train_model(X_train, y_train, random_state=42):
+def train_model(X_train, y_train, X_valid=None, y_valid=None, random_state=42):
     """
     Train a LightGBM classifier.
     
@@ -56,7 +56,17 @@ def train_model(X_train, y_train, random_state=42):
         verbose=-1
     )
     
-    model.fit(X_train, y_train)
+    # Fit with validation set if provided
+    if X_valid is not None and y_valid is not None:
+        model.fit(
+            X_train, y_train,
+            eval_set=[(X_train, y_train), (X_valid, y_valid)],
+            eval_metric='auc',
+            eval_names=['training', 'valid_1']
+        )
+    else:
+        model.fit(X_train, y_train)
+    
     return model
 
 
@@ -81,6 +91,14 @@ def main():
         raise SystemExit(f"Target column '{args.target}' not found")
 
     df = features_df.dropna(subset=[args.target])
+    
+    # Drop ID column if it exists
+    id_columns = ['ID', 'id', 'Id', 'SK_ID_CURR', 'SK_ID_PREV', 'SK_ID_BUREAU']
+    for id_col in id_columns:
+        if id_col in df.columns:
+            logger.info("Dropping ID column: %s", id_col)
+            df = df.drop(id_col, axis=1)
+    
     feature_cols = [c for c in df.columns if c != args.target]
     
     if not feature_cols:
@@ -91,13 +109,23 @@ def main():
 
     logger.info("Dataset shape: %s, Target distribution: %s", X.shape, dict(y.value_counts()))
 
-    # Train/test split
-    X_train, X_test, y_train, y_test = train_test_split(
+    # Train/validation/test split
+    # First split off test set
+    X_temp, X_test, y_temp, y_test = train_test_split(
         X, y, test_size=args.test_size, random_state=args.random_state, stratify=y
     )
+    
+    # Then split remaining into train and validation (80/20 split of remaining data)
+    X_train, X_valid, y_train, y_valid = train_test_split(
+        X_temp, y_temp, test_size=0.2, random_state=args.random_state, stratify=y_temp
+    )
+    
+    logger.info("Train set: %d samples", len(X_train))
+    logger.info("Validation set: %d samples", len(X_valid))
+    logger.info("Test set: %d samples", len(X_test))
 
-    logger.info("Training LightGBM model...")
-    model = train_model(X_train, y_train, random_state=args.random_state)
+    logger.info("Training LightGBM model with validation...")
+    model = train_model(X_train, y_train, X_valid, y_valid, random_state=args.random_state)
 
     # Evaluate
     logger.info("Evaluating on test set...")
@@ -121,6 +149,16 @@ def main():
     joblib.dump(model, args.output)
     logger.info("Model saved to %s", args.output)
     print(f"\n✓ Model saved to {args.output}")
+    
+    # Save test set for validation and ROC curve generation
+    test_data_path = args.output.replace('.pkl', '_test_data.csv')
+    test_df = X_test.copy()
+    test_df[args.target] = y_test
+    test_df.to_csv(test_data_path, index=False)
+    logger.info("Test data saved to %s", test_data_path)
+    print(f"✓ Test data saved to {test_data_path}")
+    print(f"  - {len(test_df)} samples")
+    print(f"  - {len(feature_cols)} features + target")
 
 
 if __name__ == "__main__":

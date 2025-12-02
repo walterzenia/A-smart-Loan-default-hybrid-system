@@ -79,9 +79,9 @@ def get_model_type(model_name):
     model_name = model_name.lower()
     if 'ensemble' in model_name or 'wrapper' in model_name:
         return 'ensemble'
-    elif 'hybrid' in model_name:
+    elif  'traditional' in model_name:
         return 'traditional'
-    elif 'first_lgbm' in model_name or 'behav' in model_name:
+    elif 'behav' in model_name:
         return 'behavioral'
     else:
         return 'unknown'

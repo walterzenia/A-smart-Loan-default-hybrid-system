@@ -2,8 +2,6 @@
 
 #### System Overview
 
-
-
 ```mermaid
 graph TB
     Start([User Input]) --> Choice{Prediction Mode}
@@ -39,16 +37,19 @@ graph TB
 
 ```mermaid
 graph LR
-    A[Raw Input<br/>11 Base Features] --> B[Feature Engineering<br/>process_apps]
+    A[Raw Input<br/>7 Datasets] --> B[Feature Engineering<br/>traditional_features]
     B --> C[Engineered Data<br/>487 Features]
     C --> D[Traditional Model<br/>LightGBM]
     D --> E[Prediction Output<br/>Default Probability]
 
-    subgraph "Base Features"
-    A1[EXT_SOURCE 1-3<br/>Credit Scores]
-    A2[AMT_CREDIT<br/>AMT_INCOME<br/>AMT_ANNUITY]
-    A3[DAYS_BIRTH<br/>DAYS_EMPLOYED]
-    A4[CNT_FAM_MEMBERS<br/>OWN_CAR_AGE]
+    subgraph "Input Datasets"
+    A1[applications<br/>Application Data]
+    A2[bureau<br/>Credit Bureau]
+    A3[bureau_balance<br/>Bureau Balances]
+    A4[previous_application<br/>Previous Loans]
+    A5[POS_CASH_balance<br/>POS History]
+    A6[installments_payments<br/>Installment History]
+    A7[credit_card_balance<br/>Card History]
     end
 
     subgraph "Engineered Features Examples"
@@ -67,8 +68,8 @@ graph LR
 
 **Traditional Model Flow:**
 
-1. **Input**: 11 base features from Home Credit dataset
-2. **Processing**: `process_apps()` function creates 487 engineered features
+1. **Input**: 7 Home Credit datasets (applications, bureau, bureau_balance, previous_application, POS_CASH_balance, installments_payments, credit_card_balance)
+2. **Processing**: `traditional_features()` function merges and engineers 487 features from all datasets
 3. **Model**: LightGBM trained on 487 features
 4. **Output**: Default probability (0-1)
 
@@ -78,17 +79,17 @@ graph LR
 
 ```mermaid
 graph LR
-    A[Raw Input<br/>23 Base Features] --> B[Feature Engineering<br/>behaviorial_features]
+    A[Raw Input<br/>1 Dataset with 23 Columns] --> B[Feature Engineering<br/>behavioral_features]
     B --> C[Engineered Data<br/>31 Features]
     C --> D[Behavioral Model<br/>LightGBM]
     D --> E[Prediction Output<br/>Default Probability]
 
-    subgraph "Base Features"
+    subgraph "UCI Dataset Columns (23)"
     A1[LIMIT_BAL<br/>Credit Limit]
-    A2[Demographic<br/>SEX, EDU, MARRIAGE, AGE]
-    A3[Payment History<br/>PAY_0 to PAY_6]
-    A4[Bill Amounts<br/>BILL_AMT1-6]
-    A5[Payment Amounts<br/>PAY_AMT1-6]
+    A2[Demographics (5)<br/>SEX, EDUCATION, MARRIAGE, AGE]
+    A3[Payment History (6)<br/>PAY_0, PAY_2-6]
+    A4[Bill Amounts (6)<br/>BILL_AMT1-6]
+    A5[Payment Amounts (6)<br/>PAY_AMT1-6]
     end
 
     subgraph "Engineered Features Examples"
@@ -108,8 +109,8 @@ graph LR
 
 **Behavioral Model Flow:**
 
-1. **Input**: 23 base features from UCI Credit Card dataset
-2. **Processing**: `behaviorial_features()` function creates 31 total features (23 base + 8 engineered)
+1. **Input**: 1 UCI Credit Card dataset with 23 columns (demographics, payment history, bills, payments)
+2. **Processing**: `behavioral_features()` function creates 31 total features (23 original + 8 engineered)
 3. **Model**: LightGBM trained on 31 features
 4. **Output**: Default probability (0-1)
 
@@ -147,11 +148,11 @@ graph TB
 
 **Ensemble Model Flow:**
 
-1. **Input**: Combined 34 base features (11 traditional + 23 behavioral)
-2. **Split**: Separate features into traditional and behavioral groups
+1. **Input**: Combined datasets (7 Home Credit datasets + 1 UCI dataset)
+2. **Split**: Separate data into traditional and behavioral sources
 3. **Processing**:
-   - Apply `process_apps()` to traditional features → 487 features
-   - Apply `behaviorial_features()` to behavioral features → 31 features
+   - Apply `traditional_features()` to 7 Home Credit datasets → 487 features
+   - Apply `behavioral_features()` to UCI dataset → 31 features
 4. **Combine**: Concatenate both feature sets → 518 total features
 5. **Model**: Ensemble LightGBM trained on hybrid features
 6. **Output**: Default probability (0-1)
@@ -160,11 +161,11 @@ graph TB
 
 ## Feature Engineering Details
 
-### Traditional Feature Engineering (`process_apps`)
+### Traditional Feature Engineering (`traditional_features`)
 
 ```mermaid
 graph TD
-    Input[11 Base Features] --> FE[Feature Engineering]
+    Input[7 Home Credit Datasets] --> FE[Feature Engineering]
 
     FE --> Cat1[Ratio Features<br/>Credit/Income<br/>Annuity/Credit]
     FE --> Cat2[Aggregation Features<br/>Mean External Source<br/>Total Credit Products]
@@ -183,11 +184,11 @@ graph TD
     style Output fill:#c5e1a5
 ```
 
-#### Behavioral Feature Engineering (`behaviorial_features`)
+#### Behavioral Feature Engineering (`behavioral_features`)
 
 ```mermaid
 graph TD
-    Input[23 Base Features] --> FE[Feature Engineering]
+    Input[1 UCI Dataset - 23 Columns] --> FE[Feature Engineering]
 
     FE --> Cat1[Financial Aggregates<br/>Total Billed Amount<br/>Total Payment Amount<br/>Avg Transaction]
     FE --> Cat2[Volatility Metrics<br/>Spending Volatility<br/>Rolling Balance<br/>Income Consistency]
@@ -195,7 +196,7 @@ graph TD
     FE --> Cat4[Risk Indicators<br/>Debt Stress Index<br/>Credit Utilization<br/>Spend-to-Income Ratio]
     FE --> Cat5[Trend Features<br/>Bill Changes (1-2, 3-4, 4-5)<br/>Credit Utilization Trend]
 
-    Cat1 --> Output[31 Total Features<br/>23 Base + 8 Engineered]
+    Cat1 --> Output[31 Total Features<br/>23 Original + 8 Engineered]
     Cat2 --> Output
     Cat3 --> Output
     Cat4 --> Output
@@ -221,17 +222,17 @@ sequenceDiagram
     participant R as Results Display
 
     U->>F: Fill Applicant Details
-    F->>FE: Submit Base Features
+    F->>FE: Submit Input Data
 
     alt Traditional Model
-        FE->>FE: process_apps(11 features)
-        FE->>M: Send 487 features
+        FE->>FE: process_apps(simplified 11 features for manual input)
+        FE->>M: Send engineered features
     else Behavioral Model
-        FE->>FE: behaviorial_features(23 features)
+        FE->>FE: behavioral_features(23 columns)
         FE->>M: Send 31 features
     else Ensemble Model
-        FE->>FE: process_apps(11) + behaviorial_features(23)
-        FE->>M: Send 518 features
+        FE->>FE: Both engineering functions
+        FE->>M: Send combined features
     end
 
     M->>M: LightGBM Prediction
@@ -277,9 +278,9 @@ graph TD
     Check -->|Contains 'lgbm'| Behav[Behavioral Model Type]
     Check -->|Contains 'ensemble'| Ens[Ensemble Model Type]
 
-    Trad --> TradForm[Show Traditional Form<br/>11 Base Features]
-    Behav --> BehavForm[Show Behavioral Form<br/>23 Base Features]
-    Ens --> EnsForm[Show Hybrid Form<br/>34 Combined Features]
+    Trad --> TradForm[Show Traditional Form<br/>Simplified 11-field Input]
+    Behav --> BehavForm[Show Behavioral Form<br/>23-field UCI Input]
+    Ens --> EnsForm[Show Hybrid Form<br/>Combined Input Forms]
 
     TradForm --> TradFE[Apply process_apps]
     BehavForm --> BehavFE[Apply behaviorial_features]
@@ -329,44 +330,47 @@ graph LR
 
 ### Feature Count Summary
 
-| Model Type      | Base Features | Engineered Features | Total Features |
-| --------------- | ------------- | ------------------- | -------------- |
-| **Traditional** | 11            | 476                 | **487**        |
-| **Behavioral**  | 23            | 8                   | **31**         |
-| **Ensemble**    | 34 (11+23)    | 484 (476+8)         | **518**        |
+| Model Type      | Input Sources | Original Columns | Engineered Features | Total Features |
+| --------------- | ------------- | ---------------- | ------------------- | -------------- |
+| **Traditional** | 7 datasets    | Many             | Merged/engineered   | **487**        |
+| **Behavioral**  | 1 dataset     | 23               | 8                   | **31**         |
+| **Ensemble**    | 8 datasets    | 7 HC + 1 UCI     | Combined            | **518**        |
 
 ---
 
 ### Key Engineering Functions
 
-#### Traditional: `process_apps(df)`
+#### Traditional: `traditional_features(apps, bureau, bureau_bal, prev, pos_bal, install, card_bal)`
 
 ```python
-Input:  11 base features
-        ├── EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3
-        ├── AMT_CREDIT, AMT_INCOME_TOTAL, AMT_ANNUITY, AMT_GOODS_PRICE
-        ├── DAYS_BIRTH, DAYS_EMPLOYED
-        └── CNT_FAM_MEMBERS, OWN_CAR_AGE
+Input:  7 Home Credit datasets
+        ├── applications (application_train.csv)
+        ├── bureau (bureau.csv)
+        ├── bureau_balance (bureau_balance.csv)
+        ├── previous_application (previous_application.csv)
+        ├── POS_CASH_balance (POS_CASH_balance.csv)
+        ├── installments_payments (installments_payments.csv)
+        └── credit_card_balance (credit_card_balance.csv)
 
 Output: 487 engineered features
-        ├── Original 11 features
-        ├── 476 calculated features:
-            ├── Ratios (credit/income, annuity/income, etc.)
-            ├── Aggregations (mean, sum, max, min)
-            ├── Statistical (std, variance, percentiles)
-            └── Interactions (cross-products, conditionals)
+        ├── Application features (process_apps)
+        ├── Bureau aggregations (get_bureau_agg)
+        ├── Previous loan aggregations (get_prev_agg)
+        ├── POS balance features (process_pos)
+        ├── Installment features (process_install)
+        └── Credit card features (process_card)
 ```
 
-#### Behavioral: `behaviorial_features(df)`
+#### Behavioral: `behavioral_features(uci_data)`
 
 ```python
-Input:  23 base features
-        ├── LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE
-        ├── PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6
-        ├── BILL_AMT1-6 (6 features)
-        └── PAY_AMT1-6 (6 features)
+Input:  1 UCI Credit Card dataset with 23 columns
+        ├── LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE (5)
+        ├── PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6 (6)
+        ├── BILL_AMT1-6 (6 columns)
+        └── PAY_AMT1-6 (6 columns)
 
-Output: 31 features (23 base + 8 engineered)
+Output: 31 features (23 original + 8 engineered)
         ├── Original 23 features
         ├── 8 calculated features:
             ├── total_billed_amount
@@ -1014,9 +1018,9 @@ graph LR
 
 This hybrid system provides three specialized models:
 
-1. **Traditional Model**: Deep feature engineering from 11 base features → 487 features
-2. **Behavioral Model**: Payment pattern analysis from 23 base features → 31 features
-3. **Ensemble Model**: Combined approach using both feature sets → 518 features
+1. **Traditional Model**: Comprehensive feature engineering from 7 Home Credit datasets → 487 features
+2. **Behavioral Model**: Payment pattern analysis from 1 UCI dataset (23 columns) → 31 features
+3. **Ensemble Model**: Combined approach using all 8 datasets → 518 features
 
 Each model uses LightGBM for predictions and returns a probability (0-1) representing default risk, which is then classified into Low/Medium/High risk categories for actionable insights.
 

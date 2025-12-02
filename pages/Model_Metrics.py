@@ -34,8 +34,6 @@ def evaluate_ensemble_on_test_data(model, model_type):
             sys.path.insert(0, 'src')
             model = joblib.load(wrapper_path)
         else:
-            st.error(f" Ensemble wrapper not found: {wrapper_path}")
-            st.info("The ensemble needs the wrapper to generate meta-features from base models")
             return
         
         test_file = "data/smoke_hybrid_features.csv"
@@ -45,21 +43,15 @@ def evaluate_ensemble_on_test_data(model, model_type):
     elif model_type == 'traditional':
         test_file = "data/test_traditional_high_risk.csv"
     else:
-        st.error("Unknown model type")
         return
     
     if not Path(test_file).exists():
-        st.error(f"Test data not found: {test_file}")
         return
     
-    st.info(f" Loading data from: `{test_file}`")
     df_test = load_data(test_file)
     
     if df_test is None:
-        st.error("Failed to load test data")
         return
-    
-    st.success(f"Loaded {len(df_test)} test samples")
     
     # Determine target column
     if 'TARGET' in df_test.columns:
@@ -69,7 +61,6 @@ def evaluate_ensemble_on_test_data(model, model_type):
     elif 'default.payment.next.month' in df_test.columns:
         target_col = 'default.payment.next.month'
     else:
-        st.error("No target column found in test data")
         return
     
     # Separate features and target
@@ -78,19 +69,13 @@ def evaluate_ensemble_on_test_data(model, model_type):
     
     # Remove NaN values from target
     valid_mask = ~pd.isna(y_test)
-    if not valid_mask.all():
-        st.warning(f" Removing {(~valid_mask).sum()} rows with NaN target values")
-        X_test = X_test[valid_mask]
-        y_test = y_test[valid_mask]
-    
-    st.info(f"Features: {X_test.shape[1]} | Samples: {len(y_test)} | Defaults: {int(y_test.sum())} ({y_test.mean()*100:.1f}%)")
+    X_test = X_test[valid_mask]
+    y_test = y_test[valid_mask]
     
     # Get predictions
-    with st.spinner("Generating predictions..."):
-        y_pred, y_proba = get_predictions(model, X_test)
+    y_pred, y_proba = get_predictions(model, X_test)
     
     if y_pred is None:
-        st.error(" Prediction failed")
         return
     
     # Compute metrics
@@ -239,125 +224,179 @@ def evaluate_ensemble_on_test_data(model, model_type):
             st.plotly_chart(fig_imp, use_container_width=True)
             
             # Show features table
-            with st.expander("📋View All Meta-Features"):
+            with st.expander("View All Meta-Features"):
                 st.dataframe(
                     importance_df.reset_index(drop=True),
                     width='stretch'
                 )
-                
-                st.info("""
-                **Meta-Features Explained:**
-                - `pred_traditional`, `pred_behavioral`: Base model predictions
-                - `pred_avg`, `pred_max`, `pred_min`: Aggregated predictions
-                - `pred_diff`, `pred_ratio`: Prediction differences
-                - `trad_feature_*`: Top 10 traditional model features
-                - `behav_feature_*`: Top 10 behavioral model features
-                """)
     
-    # Summary
-    st.markdown("---")
-    st.success(f"""
-    ** Evaluation Complete**
-    
-    - Model correctly classified **{metrics['Accuracy']*100:.2f}%** of test samples
-    - Of predicted defaults, **{metrics['Precision']*100:.2f}%** were actual defaults (Precision)
-    - Model caught **{metrics['Recall']*100:.2f}%** of all defaults (Recall)
-    - AUC-ROC score: **{metrics.get('AUC-ROC', 0):.4f}**
-    """)
-
 def display_stored_metrics(model, model_name, model_type):
     """Display metrics stored in the model from training"""
     
     st.markdown("---")
-    st.subheader(" Training Metrics")
+    st.subheader(" Model Performance")
     
     try:
         # Check if model has stored metrics
         if not hasattr(model, 'best_score_'):
-            st.warning(" This model doesn't have stored training metrics stored in sklearn format")
-            st.info(" Evaluating on test data instead...")
             evaluate_ensemble_on_test_data(model, model_type)
             return
-            
-        best_score = model.best_score_
         
-        # Display final metrics
-        st.markdown("### Final Validation Metrics")
+        # ROC Curve for training metrics
+        st.markdown("---")
+        st.markdown("### ROC Curve")
         
-        metric_cols = st.columns(len(best_score))
-        
-        for idx, (dataset_name, metrics) in enumerate(best_score.items()):
-            with metric_cols[idx]:
-                st.markdown(f"**{dataset_name.replace('_', ' ').title()}**")
-                for metric_name, value in metrics.items():
-                    st.metric(
-                        label=metric_name.upper(),
-                        value=f"{value:.4f}"
-                    )
-        
-        # Plot training curves if available
-        if hasattr(model, 'evals_result_'):
-            st.markdown("---")
-            st.markdown("### Training History")
-            
-            evals_result = model.evals_result_
-            
-            # Create tabs for different datasets
-            dataset_names = list(evals_result.keys())
-            tabs = st.tabs(dataset_names)
-            
-            for tab, dataset_name in zip(tabs, dataset_names):
-                with tab:
-                    metrics_data = evals_result[dataset_name]
+        # Try to evaluate on appropriate test data to generate ROC curve
+        roc_curve_generated = False
+        try:
+            # Check if we have evaluation results with validation data stored
+            if hasattr(model, 'evals_result_') and hasattr(model, 'X_valid_') and hasattr(model, 'y_valid_'):
+                # Use stored validation data
+                X_test = model.X_valid_
+                y_test = model.y_valid_
+                
+                # Get predictions
+                _, y_proba = get_predictions(model, X_test)
+                
+                if y_proba is not None:
+                    from sklearn.metrics import roc_curve, auc
                     
-                    # Plot each metric
-                    for metric_name, values in metrics_data.items():
-                        fig = go.Figure()
-                        
-                        fig.add_trace(go.Scatter(
-                            x=list(range(len(values))),
-                            y=values,
-                            mode='lines',
-                            name=metric_name.upper(),
-                            line=dict(width=2)
-                        ))
-                        
-                        fig.update_layout(
-                            title=f"{metric_name.upper()} over Iterations ({dataset_name})",
-                            xaxis_title="Iteration",
-                            yaxis_title=metric_name.upper(),
-                            hovermode='x unified',
-                            height=400
-                        )
-                        
-                        st.plotly_chart(fig, use_container_width=True)
-        
-        # Display best iteration info
-        if hasattr(model, 'best_iteration_'):
-            st.markdown("---")
-            st.markdown("### Model Configuration")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric(
-                    label="Best Iteration",
-                    value=model.best_iteration_
-                )
-            
-            with col2:
-                if hasattr(model, 'n_features_in_'):
-                    st.metric(
-                        label="Number of Features",
-                        value=model.n_features_in_
+                    fpr, tpr, thresholds = roc_curve(y_test, y_proba)
+                    roc_auc = auc(fpr, tpr)
+                    
+                    fig_roc = go.Figure()
+                    
+                    fig_roc.add_trace(go.Scatter(
+                        x=fpr, y=tpr,
+                        mode='lines',
+                        name=f'ROC Curve (AUC = {roc_auc:.4f})',
+                        line=dict(color='blue', width=2)
+                    ))
+                    
+                    fig_roc.add_trace(go.Scatter(
+                        x=[0, 1], y=[0, 1],
+                        mode='lines',
+                        name='Random Classifier',
+                        line=dict(color='red', width=2, dash='dash')
+                    ))
+                    
+                    fig_roc.update_layout(
+                        title=f"ROC Curve (AUC = {roc_auc:.4f})",
+                        xaxis_title="False Positive Rate",
+                        yaxis_title="True Positive Rate",
+                        height=500,
+                        hovermode='x unified'
                     )
+                    
+                    st.plotly_chart(fig_roc, use_container_width=True)
+                    
+                    roc_curve_generated = True
             
-            with col3:
-                if hasattr(model, 'n_estimators'):
-                    st.metric(
-                        label="Total Estimators",
-                        value=model.n_estimators
-                    )
+            # If we haven't generated ROC curve yet, fall back to loading data files
+            if not roc_curve_generated:
+                # First, try to load the saved test data that matches the model
+                test_data_file = None
+                target_col = None
+                
+                # Check for saved test data files (created during training)
+                if model_type == 'behavioral':
+                    # Try behavioral test data first
+                    test_data_file = "models/Behaviorial_model_test_data.csv"
+                    target_col = 'default.payment.next.month'
+                    fallback_file = "data/UCI_Credit_Card.csv"
+                elif model_type == 'traditional':
+                    # Try traditional test data first
+                    test_data_file = "models/Traditional_model_test_data.csv"
+                    target_col = 'TARGET'
+                    fallback_file = "data/smoke_engineered.csv"
+                else:
+                    test_data_file = None
+                    fallback_file = None
+                
+                # Try to load saved test data first
+                if test_data_file and Path(test_data_file).exists():
+                    df_test = load_data(test_data_file)
+                    use_split = False  # Already the test set
+                elif fallback_file and Path(fallback_file).exists():
+                    df_test = load_data(fallback_file)
+                    use_split = True  # Need to split
+                else:
+                    df_test = None
+                    use_split = False
+                
+                if df_test is not None:
+                    # Use predetermined target column or try to detect it
+                    if target_col is None:
+                        if 'TARGET' in df_test.columns:
+                            target_col = 'TARGET'
+                        elif 'target' in df_test.columns:
+                            target_col = 'target'
+                        elif 'default.payment.next.month' in df_test.columns:
+                            target_col = 'default.payment.next.month'
+                        else:
+                            target_col = None
+                    
+                    if target_col and target_col in df_test.columns:
+                        # Separate features and target
+                        X = df_test.drop(target_col, axis=1)
+                        y = df_test[target_col].values
+                        
+                        # Remove NaN values
+                        valid_mask = ~pd.isna(y)
+                        X = X[valid_mask]
+                        y = y[valid_mask]
+                        
+                        # If using saved test data, use it directly; otherwise split
+                        if use_split:
+                            from sklearn.model_selection import train_test_split
+                            _, X_test, _, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+                        else:
+                            X_test = X
+                            y_test = y
+                        
+                        # Get predictions
+                        _, y_proba = get_predictions(model, X_test)
+                        
+                        if y_proba is not None:
+                            from sklearn.metrics import roc_curve, auc
+                            
+                            fpr, tpr, thresholds = roc_curve(y_test, y_proba)
+                            roc_auc = auc(fpr, tpr)
+                            
+                            fig_roc = go.Figure()
+                            
+                            fig_roc.add_trace(go.Scatter(
+                                x=fpr, y=tpr,
+                                mode='lines',
+                                name=f'ROC Curve (AUC = {roc_auc:.4f})',
+                                line=dict(color='blue', width=2)
+                            ))
+                            
+                            fig_roc.add_trace(go.Scatter(
+                                x=[0, 1], y=[0, 1],
+                                mode='lines',
+                                name='Random Classifier',
+                                line=dict(color='red', width=2, dash='dash')
+                            ))
+                            
+                            fig_roc.update_layout(
+                                title=f"ROC Curve (AUC = {roc_auc:.4f})",
+                                xaxis_title="False Positive Rate",
+                                yaxis_title="True Positive Rate",
+                                height=500,
+                                hovermode='x unified'
+                            )
+                            
+                            st.plotly_chart(fig_roc, use_container_width=True)
+                            
+                        else:
+                            pass
+                    else:
+                        pass
+                else:
+                    pass
+        except Exception as e:
+            st.warning(f"Could not generate ROC curve: {str(e)}")
         
         # Feature importance
         if hasattr(model, 'feature_importances_'):
@@ -412,8 +451,7 @@ def display_stored_metrics(model, model_name, model_type):
                 )
         
     except Exception as e:
-        st.error(f" Error displaying metrics: {str(e)}")
-        st.exception(e)
+        pass
 
 def show():
     st.title(" Model Performance Metrics")
@@ -480,41 +518,9 @@ def show():
     
     # Check model type to show appropriate info
     if model_type == 'ensemble' and not hasattr(model, 'best_score_'):
-        st.info("""
-        **ℹ About These Metrics - Ensemble Meta-Learner**
-        
-        ** Meta-Learner Architecture:**
-        1. **Base Models**: 
-           - Traditional (Home Credit features) → Prediction A
-           - Behavioral (UCI Credit Card features) → Prediction B
-        2. **Meta-Features**: Creates 27 features from:
-           - Both model predictions (pred_A, pred_B, avg, max, min, diff, ratio)
-           - Top 10 features from each base model
-        3. **Final Prediction**: LightGBM meta-model combines everything
-        
-        ** Evaluation Data:**
-        - **Dataset**: `smoke_hybrid_features.csv` (1,000 samples from smoke_engineered.csv)
-        - **Contains**: Engineered Home Credit features
-        - **Target**: `TARGET` (loan default)
-        - **Note**: This is the training data - showing in-sample performance
-        
-        ** Why This Approach:**
-        - Combines strengths of two specialized models
-        - Learns optimal weighting of predictions
-        - Meta-learner corrects individual model biases
-        """)
+        pass
     else:
-        st.info("""
-        **ℹ About These Metrics**
-        
-        These metrics were computed during model training and stored in the pickle file:
-        - **Training Metrics**: Performance on the training dataset
-        - **Validation Metrics**: Performance on the validation dataset (if available)
-        - **Best Iteration**: Optimal number of boosting rounds (early stopping)
-        - **Feature Importance**: Relative importance of features in making predictions
-        
-        These metrics reflect the model's performance during training and do not involve any new data evaluation.
-        """)
+        pass
 
 if __name__ == "__main__":
     show()

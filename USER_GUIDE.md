@@ -49,8 +49,8 @@
 
 **Purpose:** Overview of the three prediction models
 
-- **Traditional Model** - Home Credit features (487 features)
-- **Behavioral Model** - UCI Credit Card patterns (27 features)
+- **Traditional Model** - Home Credit features (7 datasets → 487 features)
+- **Behavioral Model** - UCI Credit Card patterns (1 dataset, 23 columns → 31 features)
 - **Ensemble Model** - Combined hybrid predictions
 
 **Quick Stats:**

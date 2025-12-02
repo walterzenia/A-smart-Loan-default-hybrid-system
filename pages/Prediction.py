@@ -266,10 +266,11 @@ def traditional_input_form():
         st.markdown("####  Traditional Model Features")
         st.warning("""
         ⚠️ **Important Limitation:**  
-        The traditional model was trained on **487 features** including bureau reports, previous applications, 
-        installments, POS-CASH, and credit card data. This manual form only provides **11 basic features** (→24 after engineering).
+        The traditional model was trained on **487 features** from **7 Home Credit datasets** (applications, bureau, 
+        bureau_balance, previous_application, POS_CASH_balance, installments_payments, credit_card_balance). 
+        This manual form only provides **11 simplified fields** for quick testing.
         
-        **Result:** Predictions may fail or be unreliable due to missing features.  
+        **Result:** Predictions may fail or be unreliable due to missing features from the other 6 datasets.  
         **Recommended:** Use **Batch Prediction** with `smoke_engineered.csv` for accurate traditional model predictions.
         """)
         
@@ -334,7 +335,7 @@ def behavioral_input_form():
     """Form for Behavioral (UCI Credit Card) features only"""
     with st.form("behavioral_form"):
         st.markdown("####  Behavioral Model Features")
-        st.info("This form provides UCI Credit Card features. For all 31 features, use batch prediction.")
+        st.info("This form provides UCI Credit Card features. The model uses 23 base columns engineered into 31 features. For complete batch prediction, upload a CSV with all columns.")
         
         col1, col2, col3 = st.columns(3)
         

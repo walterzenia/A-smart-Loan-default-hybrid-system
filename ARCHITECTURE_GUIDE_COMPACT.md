@@ -28,62 +28,66 @@ graph TB
 
 ### 1. Traditional Model (Home Credit)
 
-**Input:** 11 base features → **Process:** Feature engineering → **Output:** 487 features
+**Input:** 7 Home Credit datasets → **Process:** Feature engineering → **Output:** 487 features
 
 ```mermaid
 graph LR
-    A[11 Base<br/>Features] --> B[process_apps<br/>Engineering]
+    A[7 Datasets<br/>Home Credit] --> B[traditional_features<br/>Engineering]
     B --> C[487<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
 ```
 
-**Base Features:**
+**Input Datasets:**
 
-- Credit scores (EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3)
-- Loan amounts (AMT_CREDIT, AMT_INCOME_TOTAL, AMT_ANNUITY, AMT_GOODS_PRICE)
-- Demographics (DAYS_BIRTH, DAYS_EMPLOYED, CNT_FAM_MEMBERS, OWN_CAR_AGE)
+- applications (application_train.csv)
+- bureau (bureau.csv)
+- bureau_balance (bureau_balance.csv)
+- previous_application (previous_application.csv)
+- POS_CASH_balance (POS_CASH_balance.csv)
+- installments_payments (installments_payments.csv)
+- credit_card_balance (credit_card_balance.csv)
 
-**Engineered Features:** Ratios, aggregations, temporal features, statistical metrics
+**Engineered Features:** Merged and aggregated across all datasets with ratios, temporal features, statistical metrics
 
 ---
 
 ### 2. Behavioral Model (UCI Credit Card)
 
-**Input:** 23 base features → **Process:** Feature engineering → **Output:** 31 features
+**Input:** 1 UCI dataset (23 columns) → **Process:** Feature engineering → **Output:** 31 features
 
 ```mermaid
 graph LR
-    A[23 Base<br/>Features] --> B[behaviorial_features<br/>Engineering]
+    A[1 Dataset<br/>23 Columns] --> B[behavioral_features<br/>Engineering]
     B --> C[31<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
 ```
 
-**Base Features:**
+**Dataset Columns (23):**
 
-- Demographics: LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE
-- Payment history: PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6
-- Bill amounts: BILL_AMT1-6
-- Payment amounts: PAY_AMT1-6
+- Demographics: LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE (5)
+- Payment history: PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6 (6)
+- Bill amounts: BILL_AMT1-6 (6)
+- Payment amounts: PAY_AMT1-6 (6)
 
-**Engineered Features:** Total amounts, volatility metrics, payment behavior, risk indicators, trends
+**Engineered Features:** Total amounts, volatility metrics, payment behavior, risk indicators, trends (8 new features)
 
 ---
 
 ### 3. Ensemble Model (Hybrid)
 
-**Input:** 34 features (11 traditional + 23 behavioral) → **Process:** Both pipelines → **Output:** 518 features
+**Input:** 8 datasets (7 Home Credit + 1 UCI) → **Process:** Both pipelines → **Output:** 518 features
 
 ```mermaid
 graph TB
-    A[34 Combined<br/>Features] --> Split{Split}
+    A[8 Combined<br/>Datasets] --> Split{Split}
 
-    Split --> T[11 Traditional]
-    Split --> B[23 Behavioral]
+    Split --> T[7 Home Credit]
+    Split --> B[1 UCI]
 
-    T --> TE[process_apps<br/>487 features]
-    B --> BE[behaviorial_features<br/>31 features]
+    T --> TE[traditional_features<br/>487 features]
+    B --> BE[behavioral_features<br/>31 features]
 
     TE --> C[Concatenate]
     BE --> C

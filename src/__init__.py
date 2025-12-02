@@ -9,7 +9,6 @@ from .feature_engineering import (
     process_install,
     process_card,
 )
-from .train_traditional import build_pipeline
 
 __all__ = [
     "get_dataset",
@@ -21,6 +20,5 @@ __all__ = [
     "process_pos",
     "process_install",
     "process_card",
-    "build_pipeline",
 ]
 
