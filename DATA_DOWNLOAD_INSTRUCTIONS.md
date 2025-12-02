@@ -52,20 +52,20 @@ The following essential files ARE included in the repository:
 
 ### Working Datasets
 
-- ✅ `smoke_hybrid_features.csv` (58 MB) - Preprocessed training data
-- ✅ `smoke_engineered.csv` (49 MB) - Engineered features
-- ✅ `UCI_Credit_Card.csv` (3 MB) - Behavioral dataset
-- ✅ `uci_hybrid_features.csv` (1 MB) - UCI engineered features
+- `smoke_hybrid_features.csv` (58 MB) - Preprocessed training data
+- `smoke_engineered.csv` (49 MB) - Engineered features
+- `UCI_Credit_Card.csv` (3 MB) - Behavioral dataset
+- `uci_hybrid_features.csv` (1 MB) - UCI engineered features
 
 ### Test Cases
 
-- ✅ `test_traditional_high_risk.csv` - Traditional model test cases
-- ✅ `test_behavioral_high_risk.csv` - Behavioral model test cases
-- ✅ `test_hybrid_high_risk.csv` - Ensemble model test cases
+- `test_traditional_high_risk.csv` - Traditional model test cases
+- `test_behavioral_high_risk.csv` - Behavioral model test cases
+- `test_hybrid_high_risk.csv` - Ensemble model test cases
 
 ### Models
 
-- ✅ All model `.pkl` files (23 MB total) - Required for predictions
+- All model `.pkl` files (23 MB total) - Required for predictions
 
 ## Running the Application
 
@@ -90,15 +90,15 @@ streamlit run app.py
 
 The app will work with:
 
-- ✅ Predictions (all models loaded)
-- ✅ Model metrics (stored in pickle files)
-- ✅ Feature importance
-- ✅ Batch predictions with CSV upload
+- Predictions (all models loaded)
+- Model metrics (stored in pickle files)
+- Feature importance
+- Batch predictions with CSV upload
 
 **Limited functionality without large files:**
 
-- ⚠️ EDA page may have limited visualizations (uses smoke_hybrid_features.csv which IS included)
-- ⚠️ Cannot retrain models (requires full dataset)
+- EDA page may have limited visualizations (uses smoke_hybrid_features.csv which IS included)
+- Cannot retrain models (requires full dataset)
 
 ## For Model Training/Retraining
 
@@ -142,7 +142,7 @@ git push
 
 ## Repository Size Summary
 
-**Without large files**: ~150 MB (GitHub-friendly ✅)  
+**Without large files**: ~150 MB (GitHub-friendly )  
 **With large files**: ~2.7 GB (Requires Git LFS or external storage)
 
 **Recommendation**: Keep large files excluded, provide Kaggle download link in README.
