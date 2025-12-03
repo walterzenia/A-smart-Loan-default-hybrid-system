@@ -82,7 +82,7 @@ graph LR
 graph LR
     A[Raw Input<br/>1 Dataset with 23 Columns] --> A1[Data Cleaning<br/>data_cleaning.py]
     A1 --> B[Feature Engineering<br/>behavioral_features]
-    B --> C[Engineered Data<br/>31 Features]
+    B --> C[Engineered Data<br/>44 Features]
     C --> D[Behavioral Model<br/>LightGBM]
     D --> E[Prediction Output<br/>Default Probability]
 
@@ -112,8 +112,8 @@ graph LR
 **Behavioral Model Flow:**
 
 1. **Input**: 1 UCI Credit Card dataset with 23 columns (demographics, payment history, bills, payments)
-2. **Processing**: `behavioral_features()` function creates 31 total features (23 original + 8 engineered)
-3. **Model**: LightGBM trained on 31 features
+2. **Processing**: `behavioral_features()` function creates 44 total features (23 base + 21 engineered)
+3. **Model**: LightGBM trained on 44 features
 4. **Output**: Default probability (0-1)
 
 ---
@@ -124,14 +124,14 @@ graph LR
 graph TB
     Start[Raw Input<br/>Combined Features] --> Split{Split Features}
 
-    Split --> TradPath[Traditional Features<br/>11 Base]
+    Split --> TradPath[Traditional Features<br/>7 Datasets → 487 Features]
     Split --> BehavPath[Behavioral Features<br/>23 Base]
 
     TradPath --> TradEng[process_apps<br/>Feature Engineering]
     BehavPath --> BehavEng[behaviorial_features<br/>Feature Engineering]
 
     TradEng --> TradOut[487 Traditional<br/>Features]
-    BehavEng --> BehavOut[31 Behavioral<br/>Features]
+    BehavEng --> BehavOut[44 Behavioral<br/>Features]
 
     TradOut --> Combine[Concatenate<br/>Features]
     BehavOut --> Combine
@@ -154,7 +154,7 @@ graph TB
 2. **Split**: Separate data into traditional and behavioral sources
 3. **Processing**:
    - Apply `traditional_features()` to 7 Home Credit datasets → 487 features
-   - Apply `behavioral_features()` to UCI dataset → 31 features
+   - Apply `behavioral_features()` to UCI dataset → 44 features
 4. **Combine**: Concatenate both feature sets → 518 total features
 5. **Model**: Ensemble LightGBM trained on hybrid features
 6. **Output**: Default probability (0-1)
@@ -198,7 +198,7 @@ graph TD
     FE --> Cat4[Risk Indicators<br/>Debt Stress Index<br/>Credit Utilization<br/>Spend-to-Income Ratio]
     FE --> Cat5[Trend Features<br/>Bill Changes (1-2, 3-4, 4-5)<br/>Credit Utilization Trend]
 
-    Cat1 --> Output[31 Total Features<br/>23 Original + 8 Engineered]
+    Cat1 --> Output[44 Total Features<br/>23 Base + 21 Engineered]
     Cat2 --> Output
     Cat3 --> Output
     Cat4 --> Output
@@ -227,11 +227,11 @@ sequenceDiagram
     F->>FE: Submit Input Data
 
     alt Traditional Model
-        FE->>FE: process_apps(simplified 11 features for manual input)
+        FE->>FE: traditional_features(7 datasets) → process_apps + prev + bureau + pos + install + card
         FE->>M: Send engineered features
     else Behavioral Model
         FE->>FE: behavioral_features(23 columns)
-        FE->>M: Send 31 features
+        FE->>M: Send 44 features
     else Ensemble Model
         FE->>FE: Both engineering functions
         FE->>M: Send combined features
@@ -280,7 +280,7 @@ graph TD
     Check -->|Contains 'lgbm'| Behav[Behavioral Model Type]
     Check -->|Contains 'ensemble'| Ens[Ensemble Model Type]
 
-    Trad --> TradForm[Show Traditional Form<br/>Simplified 11-field Input]
+    Trad --> TradForm[Show Traditional Form<br/>Simplified Input (Limited Features)]
     Behav --> BehavForm[Show Behavioral Form<br/>23-field UCI Input]
     Ens --> EnsForm[Show Hybrid Form<br/>Combined Input Forms]
 
@@ -372,7 +372,7 @@ Input:  1 UCI Credit Card dataset with 23 columns
         ├── BILL_AMT1-6 (6 columns)
         └── PAY_AMT1-6 (6 columns)
 
-Output: 31 features (23 original + 8 engineered)
+Output: 44 features (23 base + 21 engineered)
         ├── Original 23 features
         ├── 8 calculated features:
             ├── total_billed_amount
@@ -431,7 +431,7 @@ graph TB
 
     subgraph "Model Layer"
         M1[Traditional_model.pkl<br/>487 features]
-        M2[Behaviorial_model.pkl<br/>31 features]
+        M2[Behaviorial_model.pkl<br/>44 features]
         M3[model_ensemble_wrapper.pkl<br/>518 features]
     end
 
@@ -612,8 +612,8 @@ graph TB
     end
 
     subgraph "src/feature_engineering.py"
-        FE1[process_apps<br/>Traditional Engineering<br/>11 → 487 features]
-        FE2[behaviorial_features<br/>Behavioral Engineering<br/>23 → 31 features]
+        FE1[traditional_features<br/>7 Datasets Engineering<br/>Apps+Prev+Bureau+POS+Install+Card → 487 features]
+        FE2[behaviorial_features<br/>Behavioral Engineering<br/>23 → 44 features]
         FE3[Helper Functions<br/>Aggregations<br/>Calculations]
     end
 
@@ -660,7 +660,7 @@ Loan Default Hybrid System/
 │
 ├── models/                         # Trained models
 │   ├── Traditional_model.pkl           # Traditional model (487 features)
-│   ├── Behaviorial_model.pkl         # Behavioral model (31 features)
+│   ├── Behaviorial_model.pkl         # Behavioral model (44 features)
 │   └── model_ensemble_wrapper.pkl     # Ensemble model (518 features)
 │
 └── data/ (optional)                # Training/test data
@@ -753,7 +753,7 @@ sequenceDiagram
 
     alt Manual Input
         Page->>Page: Display Model-Specific Form
-        User->>Page: Fill Form (11/23/34 features)
+        User->>Page: Fill Form (Limited/23/34 features)
     else CSV Upload
         User->>Page: Upload CSV File
         Page->>Page: Load CSV with Pandas
@@ -762,11 +762,11 @@ sequenceDiagram
     Page->>FE: Apply Feature Engineering
 
     alt Traditional
-        FE->>FE: process_apps(11 features)
+        FE->>FE: traditional_features (7 datasets)
         FE->>Page: Return 487 features
     else Behavioral
         FE->>FE: behaviorial_features(23 features)
-        FE->>Page: Return 31 features
+        FE->>Page: Return 44 features
     else Ensemble
         FE->>FE: process_apps + behaviorial_features
         FE->>Page: Return 518 features
@@ -807,7 +807,7 @@ graph TB
 
     subgraph "Feature Engineering Pipeline"
         FE1{Model Type?}
-        FE2[Traditional Pipeline<br/>11 → 487]
+        FE2[Traditional Pipeline<br/>7 Datasets → 487]
         FE3[Behavioral Pipeline<br/>23 → 31]
         FE4[Hybrid Pipeline<br/>34 → 518]
     end
@@ -1021,7 +1021,7 @@ graph LR
 This hybrid system provides three specialized models:
 
 1. **Traditional Model**: Comprehensive feature engineering from 7 Home Credit datasets → 487 features
-2. **Behavioral Model**: Payment pattern analysis from 1 UCI dataset (23 columns) → 31 features
+2. **Behavioral Model**: Payment pattern analysis from 1 UCI dataset (25 columns) → 44 features (23 base + 21 engineered)
 3. **Ensemble Model**: Combined approach using all 8 datasets → 518 features
 
 Each model uses LightGBM for predictions and returns a probability (0-1) representing default risk, which is then classified into Low/Medium/High risk categories for actionable insights.

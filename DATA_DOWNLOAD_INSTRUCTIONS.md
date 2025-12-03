@@ -106,9 +106,12 @@ If you need to train models from scratch, you MUST download the large files:
 
 ```bash
 # After downloading Home Credit files to data/:
-python src/model_training.py
+python src/train_traditional.py --data data/smoke_engineered.csv --output models/Traditional_model.pkl
+python src/train_behaviorial.py --data data/UCI_Credit_Card.csv --output models/Behaviorial_model.pkl
 python src/train_ensemble_hybrid.py
 ```
+
+**Note**: All training scripts now use the centralized `src/data_cleaning.py` module for consistent data preprocessing.
 
 ## Alternative: Git LFS (Large File Storage)
 
@@ -142,6 +145,6 @@ git push
 
 ## Repository Size Summary
 
-**Without large files**: ~150 MB (GitHub-friendly )  **With large files**: ~2.7 GB (Requires Git LFS or external storage)
+**Without large files**: ~150 MB (GitHub-friendly ) **With large files**: ~2.7 GB (Requires Git LFS or external storage)
 
 **Recommendation**: Keep large files excluded, provide Kaggle download link in README.

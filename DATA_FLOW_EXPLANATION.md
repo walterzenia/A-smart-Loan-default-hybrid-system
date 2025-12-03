@@ -15,16 +15,31 @@ User fills form → Submit button clicked → Input data created
                           (Tries to match model's expected features)
                                               ↓
                                      MISSING FEATURES!
-                          Model expects 31 features, only gets 23
+                          Model expects 44 features, only gets 23
 ```
 
 ---
 
 ## The Problem:
 
-### **Behavioral Model Expects 31 Features:**
+### **Behavioral Model Expects 44 Features:\*\***
 
-#### Base Features (11 features) - We provide these:
+#### Traditional Model Architecture:
+
+**Complete Training Pipeline:**
+
+- **7 Data Sources**: application, bureau, bureau_balance, previous_application, POS_CASH_balance, installments_payments, credit_card_balance
+- **Feature Engineering**: `traditional_features()` combines:
+  - `process_apps()` - Application features (13 engineered)
+  - `get_bureau_agg()` - Bureau aggregations (~200 features)
+  - `get_prev_agg()` - Previous loan aggregations (~150 features)
+  - `process_pos()` - POS cash features (~30 features)
+  - `process_install()` - Installment features (~80 features)
+  - `process_card()` - Credit card features (~14 features)
+- **Total Features**: 487 features
+
+**Manual Input Limitation:**
+The web form can only capture ~24 basic features from a single applicant (demographics, income, loan details), lacking the comprehensive credit bureau history, previous loan data, and payment histories that comprise 463 of the 487 features.
 
 1. LIMIT_BAL
 2. SEX
@@ -70,7 +85,7 @@ User fills form → Submit button clicked → Input data created
                                    🔧 APPLY FEATURE ENGINEERING
                               behaviorial_features(input_data)
                                               ↓
-                           [DataFrame with 31 complete features]
+                           [DataFrame with 44 complete features]
                                               ↓
                                        get_predictions()
                                               ↓
@@ -139,7 +154,7 @@ The system now uses a **centralized data cleaning module** (`src/data_cleaning.p
 
 **The `align_features()` function:**
 
-1. Gets expected features from model (e.g., 31 features for behavioral)
+1. Gets expected features from model (e.g., 44 features for behavioral)
 2. Finds missing features (e.g., 20 engineered features)
 3. **Uses `data_cleaning.py` functions:**
    - `handle_infinities()` - Replaces ±∞ with NaN
@@ -216,7 +231,7 @@ def behavioral_input_form():
 
 ## Same Issue for Traditional Model:
 
-Traditional model expects **487 features** but form only provides **11 base features**.
+Traditional model expects **487 features** from 7 datasets but form only provides **~24 base features** from manual input.
 
 Missing: 476 engineered features from `process_apps()`!
 
@@ -237,7 +252,7 @@ Missing: 476 engineered features from `process_apps()`!
 
 ✅ Base features collected from form  
 ✅ Feature engineering applied automatically  
-✅ All 31 behavioral / 487 traditional features present  
+✅ All 44 behavioral / 487 traditional features present  
 ✅ Accurate predictions
 
 ---

@@ -126,8 +126,8 @@ graph TB
     CSV --> Model
 
     Model -->|Traditional| T[Traditional<br/>487 features]
-    Model -->|Behavioral| B[Behavioral<br/>31 features]
-    Model -->|Ensemble| E[Ensemble<br/>518 features]
+    Model -->|Behavioral| B[Behavioral<br/>44 features]
+    Model -->|Ensemble| E[Ensemble<br/>531 features]
 
     T --> Pred[Prediction]
     B --> Pred
@@ -142,14 +142,13 @@ graph TB
 
     <h3>1. Traditional Model (Home Credit)</h3>
     <p>
-      <strong>Input:</strong> 11 base features →
-      <strong>Process:</strong> Feature engineering →
-      <strong>Output:</strong> 487 features
+      <strong>Input:</strong> 7 datasets → <strong>Process:</strong> Feature
+      engineering (traditional_features) → <strong>Output:</strong> 487 features
     </p>
 
     <pre class="mermaid">
 graph LR
-    A[11 Base<br/>Features] --> B[process_apps<br/>Engineering]
+    A[7 Datasets<br/>Multiple Tables] --> B[traditional_features<br/>Engineering]
     B --> C[487<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
@@ -175,15 +174,15 @@ graph LR
 
     <h3>2. Behavioral Model (UCI Credit Card)</h3>
     <p>
-      <strong>Input:</strong> 23 base features →
+      <strong>Input:</strong> 25 columns (24 features + 1 target) →
       <strong>Process:</strong> Feature engineering →
-      <strong>Output:</strong> 31 features
+      <strong>Output:</strong> 44 features (23 base + 21 engineered)
     </p>
 
     <pre class="mermaid">
 graph LR
-    A[23 Base<br/>Features] --> B[behaviorial_features<br/>Engineering]
-    B --> C[31<br/>Features]
+    A[25 Columns<br/>UCI Dataset] --> B[behaviorial_features<br/>Engineering]
+    B --> C[44<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
 </pre>
@@ -204,20 +203,20 @@ graph LR
 
     <h3>3. Ensemble Model (Hybrid)</h3>
     <p>
-      <strong>Input:</strong> 34 features (11 traditional + 23 behavioral) →
-      <strong>Process:</strong> Both pipelines → <strong>Output:</strong> 518
-      features
+      <strong>Input:</strong> Combined user data →
+      <strong>Process:</strong> Both pipelines → <strong>Output:</strong> 531
+      features (487 traditional + 44 behavioral)
     </p>
 
     <pre class="mermaid">
 graph TB
-    A[34 Combined<br/>Features] --> Split{Split}
+    A[User Input<br/>Combined Data] --> Split{Split}
 
-    Split --> T[11 Traditional]
-    Split --> B[23 Behavioral]
+    Split --> T[7 Datasets Path]
+    Split --> B[UCI Dataset Path]
 
-    T --> TE[process_apps<br/>487 features]
-    B --> BE[behaviorial_features<br/>31 features]
+    T --> TE[traditional_features<br/>487 features]
+    B --> BE[behavioral_features<br/>44 features]
 
     TE --> C[Concatenate]
     BE --> C
@@ -230,8 +229,13 @@ graph TB
 
     <h2>Feature Engineering</h2>
 
-    <h3>Traditional Engineering (process_apps)</h3>
-    <p>Creates 487 features from 11 base inputs:</p>
+    <h3>Traditional Engineering (traditional_features)</h3>
+    <p>Creates 487 features from 7 Home Credit datasets:</p>
+    <p>
+      <strong>Data Sources:</strong> application_train/test, bureau,
+      bureau_balance, previous_application, POS_CASH_balance,
+      installments_payments, credit_card_balance
+    </p>
     <p>
       1. <strong>Ratio Features:</strong> Credit/Income, Annuity/Credit,
       Goods/Income 2. <strong>Aggregations:</strong> Mean/Std of external
@@ -241,8 +245,13 @@ graph TB
       values
     </p>
 
-    <h3>Behavioral Engineering (behaviorial_features)</h3>
-    <p>Creates 31 features from 23 base inputs:</p>
+    <h3>Behavioral Engineering (behavioral_features)</h3>
+    <p>Creates 44 features from 23 base inputs (after dropping ID column):</p>
+    <p>
+      <strong>Base Features (23):</strong> LIMIT_BAL, SEX, EDUCATION, MARRIAGE,
+      AGE, PAY_0-6 (payment status), BILL_AMT1-6, PAY_AMT1-6
+    </p>
+    <p><strong>Engineered Features (21):</strong></p>
     <p>
       1. <strong>Aggregates:</strong> Total billed, total payments, average
       transaction 2. <strong>Volatility:</strong> Spending volatility, income
@@ -291,13 +300,13 @@ sequenceDiagram
 graph TD
     Start[Model Name] --> Check{Name Check}
 
-    Check -->|'hybrid'| T[Traditional Type]
-    Check -->|'lgbm'| B[Behavioral Type]
-    Check -->|'ensemble'| E[Ensemble Type]
+    Check -->|'Traditional'| T[Traditional Type]
+    Check -->|'Behavioral'| B[Behavioral Type]
+    Check -->|'Ensemble'| E[Ensemble Type]
 
-    T --> TF[11 features form]
-    B --> BF[23 features form]
-    E --> EF[34 features form]
+    T --> TF[7 datasets → 487 features]
+    B --> BF[UCI dataset → 44 features]
+    E --> EF[Both datasets → 531 features]
 
     TF --> Pred[Predict]
     BF --> Pred
@@ -356,9 +365,9 @@ graph LR
 ├── src/
 │   └── feature_engineering.py      # Feature transformations
 ├── models/
-│   ├── model_hybrid.pkl            # Traditional (487)
-│   ├── first_lgbm_model.pkl        # Behavioral (31)
-│   └── model_ensemble_wrapper.pkl  # Ensemble (518)
+│   ├── Traditional_model.pkl       # Traditional (487)
+│   ├── Behaviorial_model.pkl       # Behavioral (44)
+│   └── Ensemble_model.pkl          # Ensemble (531)
 └── data/
     └── [training datasets]</code></pre>
 
@@ -559,13 +568,17 @@ graph TB
     <h3>Model Selection Guidelines</h3>
 
     <ul>
-      <li><strong>Traditional:</strong> For Home Credit-style applicants</li>
       <li>
-        <strong>Behavioral:</strong> For credit card payment history analysis
+        <strong>Traditional (Traditional_model.pkl):</strong> For Home Credit
+        applicants with 7 datasets (487 features)
       </li>
       <li>
-        <strong>Ensemble:</strong> For comprehensive risk assessment with both
-        data types
+        <strong>Behavioral (Behaviorial_model.pkl):</strong> For UCI credit card
+        payment history analysis (44 features)
+      </li>
+      <li>
+        <strong>Ensemble (Ensemble_model.pkl):</strong> For comprehensive risk
+        assessment combining both approaches (531 features)
       </li>
     </ul>
 

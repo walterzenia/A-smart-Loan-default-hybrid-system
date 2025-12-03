@@ -1,8 +1,8 @@
 # Deployment Guide
 
 **Loan Default Prediction System**  
-**Date:** November 18, 2025  
-**Version:** 2.0.0
+**Date:** December 3, 2025  
+**Version:** 2.1.0 - Centralized Data Cleaning Module
 
 ---
 

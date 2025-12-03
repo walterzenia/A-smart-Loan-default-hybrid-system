@@ -12,7 +12,7 @@ graph TB
     CSV --> Model
 
     Model -->|Traditional| T[Traditional<br/>487 features]
-    Model -->|Behavioral| B[Behavioral<br/>31 features]
+    Model -->|Behavioral| B[Behavioral<br/>44 features]
     Model -->|Ensemble| E[Ensemble<br/>518 features]
 
     T --> Pred[Prediction]
@@ -55,13 +55,13 @@ graph LR
 
 ### 2. Behavioral Model (UCI Credit Card)
 
-**Input:** 1 UCI dataset (23 columns) → **Process:** Data cleaning + Feature engineering → **Output:** 31 features
+**Input:** 1 UCI dataset (25 columns) → **Process:** Data cleaning + Feature engineering → **Output:** 44 features
 
 ```mermaid
 graph LR
-    A[1 Dataset<br/>23 Columns] --> A1[data_cleaning.py<br/>Clean & Impute]
+    A[1 Dataset<br/>25 Columns] --> A1[data_cleaning.py<br/>Clean & Impute]
     A1 --> B[behavioral_features<br/>Engineering]
-    B --> C[31<br/>Features]
+    B --> C[44<br/>Features]
     C --> D[LightGBM<br/>Model]
     D --> E[Prediction]
 ```
@@ -90,7 +90,7 @@ graph TB
     Split --> B[1 UCI]
 
     T --> TE[traditional_features<br/>487 features]
-    B --> BE[behavioral_features<br/>31 features]
+    B --> BE[behavioral_features<br/>44 features]
 
     TE --> C[Concatenate]
     BE --> C
@@ -115,7 +115,16 @@ Creates 487 features from 11 base inputs:
 
 ### Behavioral Engineering (behaviorial_features)
 
-Creates 31 features from 23 base inputs:
+Creates 44 features from 23 base inputs (after dropping ID column):
+
+**Base Features (23):**
+
+- LIMIT_BAL, SEX, EDUCATION, MARRIAGE, AGE
+- PAY_0, PAY_2, PAY_3, PAY_4, PAY_5, PAY_6 (6 payment status)
+- BILL_AMT1-6 (6 bill amounts)
+- PAY_AMT1-6 (6 payment amounts)
+
+**Engineered Features (21):**
 
 1. **Aggregates:** Total billed, total payments, average transaction
 2. **Volatility:** Spending volatility, income consistency, rolling balance changes
@@ -163,8 +172,8 @@ graph TD
     Check -->|'lgbm'| B[Behavioral Type]
     Check -->|'ensemble'| E[Ensemble Type]
 
-    T --> TF[11 features form]
-    B --> BF[23 features form]
+    T --> TF[Limited features form<br/>24 captured features]
+    B --> BF[23 base features form<br/>→ 44 after engineering]
     E --> EF[34 features form]
 
     TF --> Pred[Predict]

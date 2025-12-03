@@ -7,7 +7,7 @@ Successfully created a hybrid ensemble model that combines traditional Home Cred
 ## Models Combined
 
 1. **Traditional_model.pkl** - Traditional Home Credit model (487 features)
-2. **Behaviorial_model.pkl** - Behavioral UCI Credit Card model (31 features)
+2. **Behaviorial_model.pkl** - Behavioral UCI Credit Card model (44 features)
 3. **model_ensemble_wrapper.pkl** - NEW Ensemble meta-learner (combines both)
 
 ## Feature Engineering
@@ -92,7 +92,7 @@ Input: Hybrid Feature Space (527 features)
     │                         │                         │
     ▼                         ▼                         ▼
 Traditional Features    Behavioral Features    Overlapping Context
-(487 features)          (31 features)          (9 shared features)
+(487 features)          (44 features)          (9 shared features)
     │                         │                         │
     ▼                         ▼                         │
 ┌─────────────────┐   ┌─────────────────┐            │
@@ -100,7 +100,7 @@ Traditional Features    Behavioral Features    Overlapping Context
 │ LightGBM Model  │   │ LightGBM Model  │            │
 │                 │   │                 │            │
 │ AUC: ~0.75      │   │ AUC: ~0.76      │            │
-│ 487 features    │   │ 31 features     │            │
+│ 487 features    │   │ 44 features     │            │
 └────────┬────────┘   └────────┬────────┘            │
          │                     │                      │
          ▼                     ▼                      ▼

@@ -47,7 +47,7 @@ The Traditional Model (`Traditional_model.pkl`) requires **487 features** for ac
 | Features Available       | 487 (100%)         | 24 (4.9%)                      |
 | Missing Features         | 0                  | 463 (95.1%)                    |
 | Default Detection        | 60%+ accuracy      | ~30% accuracy                  |
-| High-Risk Identification |  Excellent       |  Poor                        |
+| High-Risk Identification | Excellent          | Poor                           |
 
 **Test Results:**
 
@@ -58,24 +58,27 @@ The Traditional Model (`Traditional_model.pkl`) requires **487 features** for ac
 #### Technical Handling
 
 **Current Solution:**
-The `align_features()` function fills missing 463 features with zeros:
+The system uses the centralized `data_cleaning.py` module for feature alignment and imputation:
 
 ```python
-# apps/utils.py
+# apps/utils.py - Uses data_cleaning module
+from src.data_cleaning import align_features as align_fn, handle_infinities, impute_numeric_columns
+
 def align_features(X, model):
     """Align dataframe features to match model expectations"""
-    expected = model.feature_name_ if hasattr(model, 'feature_name_') else model.feature_name()
-    missing = [c for c in expected if c not in X.columns]
+    # Get expected features from model
+    if hasattr(model, 'feature_names_in_'):
+        expected = list(model.feature_names_in_)
 
-    if len(missing) > 0:
-        # Fill missing features with 0 (neutral/unknown value)
-        missing_df = pd.DataFrame({c: 0 for c in missing}, index=X.index)
-        X = pd.concat([X, missing_df], axis=1)
+    # Use centralized data cleaning
+    X = handle_infinities(X)
+    X = align_fn(X, expected, fill_value=0)
+    X = impute_numeric_columns(X, strategy='median')
 
-    return X[expected]
+    return X
 ```
 
-**Why Zeros?**
+**Why Zeros for Missing Features?**
 
 - Represents "unknown" or "not available" data
 - Prevents model crashes from missing features
@@ -84,9 +87,9 @@ def align_features(X, model):
 
 **Trade-off:**
 
--  System functional for manual form input
--  Prediction accuracy significantly reduced
--  Cannot reliably detect high-risk applicants via traditional model alone
+- System functional for manual form input
+- Prediction accuracy significantly reduced
+- Cannot reliably detect high-risk applicants via traditional model alone
 
 #### Workarounds and Recommendations
 
@@ -138,14 +141,14 @@ def align_features(X, model):
 
 #### Affected Components
 
--  `apps/home.py` - Manual loan form (affected)
--  `apps/batch.py` - CSV batch prediction (works well with complete data)
--  `apps/utils.py` - `align_features()` function (handles missing features)
--  Test suite - Traditional model tests show 29.50% (expected limitation)
+- `apps/home.py` - Manual loan form (affected)
+- `apps/batch.py` - CSV batch prediction (works well with complete data)
+- `apps/utils.py` - `align_features()` function (handles missing features)
+- Test suite - Traditional model tests show 29.50% (expected limitation)
 
 #### Status
 
-**Current:**  **DOCUMENTED LIMITATION**  
+**Current:** **DOCUMENTED LIMITATION**  
 **Impact:** HIGH (50% accuracy reduction)  
 **Mitigation:** Use Behavioral Model for manual form  
 **Resolution:** FUTURE ENHANCEMENT (lightweight model training)
@@ -179,7 +182,7 @@ Base Features (20):
 
 **NOT a simple feature concatenation:**
 
-- Does NOT take all 487 + 31 = 518 features
+- Does NOT take all 487 + 44 = 531 features
 - DOES take predictions + selected base features
 - Learns to weight and combine base model predictions
 
@@ -215,14 +218,14 @@ Base Features (20):
 
 **Good Aspects:**
 
--  Ensemble doesn't blindly trust either model
--  Recognizes when Traditional Model is unreliable
--  Provides middle-ground prediction (uncertainty indicator)
+- Ensemble doesn't blindly trust either model
+- Recognizes when Traditional Model is unreliable
+- Provides middle-ground prediction (uncertainty indicator)
 
 **Problem:**
 
--  Pulls down accurate Behavioral Model predictions
--  Results in false negatives (high-risk classified as medium-risk)
+- Pulls down accurate Behavioral Model predictions
+- Results in false negatives (high-risk classified as medium-risk)
 
 #### Workarounds and Recommendations
 
@@ -253,7 +256,7 @@ Base Features (20):
 
 #### Status
 
-**Current:**  **DOCUMENTED LIMITATION**  
+**Current:** **DOCUMENTED LIMITATION**  
 **Impact:** MEDIUM (reduces from 62.79% to 41.45%)  
 **Mitigation:** Use Behavioral Model for manual form  
 **Resolution:** FUTURE ENHANCEMENT (confidence-weighted ensemble)
@@ -273,17 +276,17 @@ The Behavioral Model requires specific engineered features including intermediat
 1. Base 23 features from UCI dataset
 2. Apply `behaviorial_features()` → generates 39 features
 3. **Manually compute** 4 bill_change features
-4. Select 31 model-expected features
+4. Select 44 model-expected features
 
-**Issue:** The `behaviorial_features()` function generates 39 features but model was trained on 31-feature subset. Missing features must be manually added.
+**Issue:** The `behaviorial_features()` function generates 44 features (23 base + 21 engineered) that align with the model's training.
 
 #### Impact
 
 **Current:**
 
--  Test script handles this correctly
--  Feature engineering pipeline documented
--  Manual computation required in code
+- Test script handles this correctly
+- Feature engineering pipeline documented
+- Manual computation required in code
 
 **Risk:**
 
@@ -308,7 +311,7 @@ behav_engineered['bill_change_2_3'] = behav_base['BILL_AMT3'] - behav_base['BILL
 behav_engineered['bill_change_3_4'] = behav_base['BILL_AMT4'] - behav_base['BILL_AMT3']
 behav_engineered['bill_change_4_5'] = behav_base['BILL_AMT5'] - behav_base['BILL_AMT4']
 
-# Select 31 model features
+# Select 44 model features
 behav_aligned = behav_engineered[behavioral_model.feature_name_]
 ```
 
@@ -321,13 +324,13 @@ behav_aligned = behav_engineered[behavioral_model.feature_name_]
 
 **Long-term:**
 
-- Update `behaviorial_features()` to generate all 31 required features
+- Update `behaviorial_features()` to generate all 44 required features (already implemented)
 - Add feature validation function
 - Create comprehensive feature engineering tests
 
 #### Status
 
-**Current:**  **WORKING (with workaround)**  
+**Current:** **WORKING (with workaround)**  
 **Impact:** LOW (handled in code)  
 **Resolution:** FUTURE ENHANCEMENT (update feature engineering function)
 
@@ -399,14 +402,14 @@ behav_aligned = behav_engineered[behavioral_model.feature_name_]
 
 **Problem:** `align_features()` caused 463 PerformanceWarnings per call  
 **Solution:** Replaced loop with `pd.concat()` (November 17, 2025)  
-**Status:**  FIXED
+**Status:** FIXED
 
 ### Issue 2: Ensemble Architecture Misunderstanding (RESOLVED )
 
 **Problem:** Treated ensemble as feature concatenation (526 features)  
 **Reality:** Meta-learner requiring predictions (27 features)  
 **Solution:** Redesigned ensemble test with correct pipeline  
-**Status:**  DOCUMENTED
+**Status:** DOCUMENTED
 
 ---
 

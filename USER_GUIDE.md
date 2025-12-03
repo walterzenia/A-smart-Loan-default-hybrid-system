@@ -29,6 +29,8 @@
    streamlit run app.py
    ```
 
+   **Note**: The system uses a centralized data cleaning module (`src/data_cleaning.py`) for all data preprocessing and missing value handling.
+
 3. **Access the Dashboard:**
    - Open your browser to: `http://localhost:8501`
    - The application runs locally on your machine
@@ -50,7 +52,7 @@
 **Purpose:** Overview of the three prediction models
 
 - **Traditional Model** - Home Credit features (7 datasets → 487 features)
-- **Behavioral Model** - UCI Credit Card patterns (1 dataset, 23 columns → 31 features)
+- **Behavioral Model** - UCI Credit Card patterns (1 dataset, 25 columns → 44 features: 23 base + 21 engineered)
 - **Ensemble Model** - Combined hybrid predictions
 
 **Quick Stats:**
@@ -656,6 +658,8 @@ Understand which features drive model decisions
 
 **AUC-ROC:** Area Under the Receiver Operating Characteristic Curve - measures model discrimination ability
 
+**Data Cleaning:** Centralized preprocessing module (`src/data_cleaning.py`) that handles missing values, infinities, placeholder replacement, and feature alignment
+
 **Default:** Failure to repay a loan according to agreed terms
 
 **Ensemble:** Combination of multiple models for improved predictions
@@ -665,6 +669,8 @@ Understand which features drive model decisions
 **False Negative:** Missing a default prediction when applicant would default
 
 **Feature Engineering:** Creating new features from raw data
+
+**Imputation:** Process of filling missing values using strategies like median, mean, or categorical defaults
 
 **Meta-Learner:** Model that learns from other models' predictions
 
@@ -680,5 +686,5 @@ Understand which features drive model decisions
 
 ---
 
-_Last Updated: November 18, 2025_  
-_Version: 1.0_
+_Last Updated: December 3, 2025_  
+_Version: 2.0 - Added centralized data cleaning module_

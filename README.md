@@ -5,6 +5,7 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Recent Updates](#recent-updates)
 - [System Architecture](#system-architecture)
 - [Data Pipeline](#data-pipeline)
 - [Feature Engineering](#feature-engineering)
@@ -18,6 +19,28 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 - [Documentation](#documentation)
 - [Testing & Quality](#testing--quality)
 - [Known Limitations](#known-limitations)
+
+---
+
+## Recent Updates
+
+### Version 2.1.0 (December 3, 2025)
+
+**Major Enhancement: Centralized Data Cleaning Module**
+
+- ✅ Created `src/data_cleaning.py` with 9 core cleaning functions
+- ✅ Consolidated all data cleaning logic from 6+ files into single module
+- ✅ Updated all training scripts to use centralized cleaning
+- ✅ Updated prediction pipeline to use centralized cleaning
+- ✅ Removed inline cleaning code for better maintainability
+- ✅ Updated all documentation and architecture diagrams
+
+**Benefits:**
+
+- Consistent data preprocessing across entire codebase
+- Single source of truth for cleaning strategies
+- Easier to maintain and update cleaning logic
+- Better testability and debugging
 
 ---
 
@@ -67,8 +90,9 @@ This project implements a sophisticated loan default prediction system that leve
 │  • behaviorial_features()- UCI behavioral features (39)     │
 │                                                              │
 │  src/extract_features.py - Feature Orchestration           │
-│  • traditional_features()- Combines apps + prev + bureau    │
-│  • behavioral_features() - Behavioral pipeline              │
+│  • traditional_features()- Combines all 7 Home Credit      │
+│                            datasets → 487 features          │
+│  • behavioral_features() - Behavioral pipeline → 44 feat.  │
 └─────────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -81,8 +105,8 @@ This project implements a sophisticated loan default prediction system that leve
 │  .pkl            │   _model.pkl     │  _wrapper.pkl        │
 │                  │                  │                      │
 │  7 datasets →    │   1 dataset →    │  Meta-learner        │
-│  487 features    │   31 features    │  Combined features   │
-│  AUC: ~0.75      │   AUC: ~0.76     │  AUC: 0.8577        │
+│  487 features    │   44 features    │  Combined features   │
+│  AUC: ~0.7970    │   AUC: ~0.7653   │  AUC: 0.8577        │
 └──────────────────┴──────────────────┴──────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -291,7 +315,7 @@ def behaviorial_features(uci: pd.DataFrame) -> pd.DataFrame:
 5. **Payment Behavior** (2 features)
    - Missed payment count, credit utilization trend
 
-**Total Behavioral Features**: 31 (including base UCI features)
+**Total Behavioral Features**: 44 (23 base UCI features + 21 engineered)
 
 ---
 
@@ -335,7 +359,7 @@ params = {
 
 **File**: `models/Behaviorial_model.pkl`
 
-**Features**: 31 behavioral features from UCI Credit Card dataset
+**Features**: 44 behavioral features from UCI Credit Card dataset (23 base + 21 engineered)
 
 **Architecture**: LightGBM Classifier
 
@@ -376,7 +400,7 @@ Level 0 (Base Models):
 ├─ Traditional Model (Traditional_model.pkl)
 │  └─ 487 features → probability_traditional
 └─ Behavioral Model (Behaviorial_model.pkl)
-   └─ 31 features → probability_behavioral
+   └─ 44 features → probability_behavioral
 
 Level 1 (Meta Features):
 ├─ pred_traditional
@@ -667,7 +691,7 @@ risks = [classify_risk(p) for p in probabilities]
 | Model               | Features | AUC-ROC    | Precision | Recall   | F1-Score | Use Case                      |
 | ------------------- | -------- | ---------- | --------- | -------- | -------- | ----------------------------- |
 | **Traditional**     | 487      | 0.7500     | 0.68      | 0.45     | 0.54     | Standard credit assessment    |
-| **Behavioral**      | 31       | 0.7600     | 0.71      | 0.42     | 0.53     | Payment behavior analysis     |
+| **Behavioral**      | 44       | 0.7653     | 0.71      | 0.42     | 0.53     | Payment behavior analysis     |
 | **Ensemble Hybrid** | 518      | **0.8577** | **0.62**  | **0.14** | **0.23** | Comprehensive risk assessment |
 
 ### Performance Highlights
@@ -749,7 +773,7 @@ Loan Default Hybrid System/
 │
 ├── models/                        # Trained models
 │   ├── Traditional_model.pkl       # Traditional model (7.69 MB, 487 features)
-│   ├── Behaviorial_model.pkl      # Behavioral model (1.05 MB, 31 features)
+│   ├── Behaviorial_model.pkl      # Behavioral model (1.05 MB, 44 features)
 │   ├── model_ensemble_wrapper.pkl # Ensemble wrapper (8.91 MB)
 │   ├── model_ensemble_hybrid.pkl  # Raw meta-learner
 │   └── ensemble_metadata.pkl      # Ensemble configuration
@@ -787,7 +811,7 @@ Loan Default Hybrid System/
 │   │   └── Trains Traditional_model.pkl (487 features)
 │   │
 │   ├── train_behaviorial.py       # Behavioral model training script
-│   │   └── Trains Behaviorial_model.pkl (31 features)
+│   │   └── Trains Behaviorial_model.pkl (44 features)
 │   │
 │   ├── train_ensemble_hybrid.py   # Ensemble training script
 │   │   └── Creates meta-learner with stacking
@@ -807,7 +831,7 @@ Loan Default Hybrid System/
 │
 ├── models/                        # Trained models
 │   ├── Traditional_model.pkl       # Traditional model (487 features)
-│   ├── Behaviorial_model.pkl      # Behavioral model (31 features)
+│   ├── Behaviorial_model.pkl      # Behavioral model (44 features)
 │   ├── model_ensemble_hybrid.pkl  # Meta-learner (stacking)
 │   ├── model_ensemble_wrapper.pkl # Complete ensemble
 │   └── ensemble_metadata.pkl      # Feature metadata
@@ -1041,8 +1065,9 @@ For detailed limitations, see **[PROJECT_LIMITATIONS.md](PROJECT_LIMITATIONS.md)
 
 ---
 
-**Last Updated**: November 18, 2025  
-**Version**: 2.0.0  
-**Status**: Production Ready
+**Last Updated**: December 3, 2025  
+**Version**: 2.1.0  
+**Status**: Production Ready  
+**Latest Update**: Centralized data cleaning module (`src/data_cleaning.py`)
 
 ---
