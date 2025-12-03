@@ -10,9 +10,9 @@ if not paths:
     print('No model files found in models/')
     raise SystemExit(1)
 
-holdout_path = Path('data/smoke_engineered.csv')
+holdout_path = Path('data/traditional_test_data.csv')
 if not holdout_path.exists():
-    print('Holdout not found at data/smoke_engineered.csv')
+    print('Holdout not found at data/traditional_test_data.csv')
     raise SystemExit(1)
 
 df = pd.read_csv(holdout_path)

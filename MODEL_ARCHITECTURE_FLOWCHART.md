@@ -488,7 +488,7 @@ graph TB
     end
 
     subgraph "Data Layer"
-        TrainData[Training Data<br/>smoke_engineered.csv<br/>uci_interface_test.csv]
+        TrainData[Training Data<br/>traditional_test_data.csv<br/>behavioral_test_data.csv]
         TestData[Test Data<br/>smoke_hybrid_features.csv]
         UserData[User Uploads<br/>CSV Files]
     end
@@ -664,8 +664,8 @@ Loan Default Hybrid System/
 │   └── model_ensemble_wrapper.pkl     # Ensemble model (518 features)
 │
 └── data/ (optional)                # Training/test data
-    ├── smoke_engineered.csv           # Traditional features
-    ├── uci_interface_test.csv         # Behavioral features
+    ├── traditional_test_data.csv      # Traditional features
+    ├── behavioral_test_data.csv       # Behavioral features
     └── smoke_hybrid_features.csv      # Hybrid features
 ```
 

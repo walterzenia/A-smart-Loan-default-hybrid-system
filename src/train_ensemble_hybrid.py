@@ -35,8 +35,8 @@ def load_hybrid_data():
     """Load the hybrid dataset with both feature types"""
     data_dir = Path(__file__).parent.parent / "data"
     
-    # Load smoke_engineered (has TARGET)
-    smoke_df = pd.read_csv(data_dir / "smoke_engineered.csv")
+    # Load traditional_test_data (has TARGET)
+    smoke_df = pd.read_csv(data_dir / "traditional_test_data.csv")
     
     # Load the hybrid features we created
     smoke_hybrid = pd.read_csv(data_dir / "smoke_hybrid_features.csv")

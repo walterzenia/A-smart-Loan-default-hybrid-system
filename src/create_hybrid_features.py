@@ -14,16 +14,16 @@ sys.path.append(str(Path(__file__).parent))
 from feature_engineering import behaviorial_features, process_apps
 
 def load_datasets():
-    """Load both smoke_engineered and uci_interface_test datasets"""
+    """Load both traditional_test_data and behavioral_test_data datasets"""
     data_dir = Path(__file__).parent.parent / "data"
     
     # Load Home Credit smoke data (has traditional features)
-    smoke_df = pd.read_csv(data_dir / "smoke_engineered.csv")
-    print(f"Loaded smoke_engineered.csv: {smoke_df.shape}")
+    smoke_df = pd.read_csv(data_dir / "traditional_test_data.csv")
+    print(f"Loaded traditional_test_data.csv: {smoke_df.shape}")
     
     # Load UCI Credit Card data (has behavioral features)
-    uci_df = pd.read_csv(data_dir / "uci_interface_test.csv")
-    print(f"Loaded uci_interface_test.csv: {uci_df.shape}")
+    uci_df = pd.read_csv(data_dir / "behavioral_test_data.csv")
+    print(f"Loaded behavioral_test_data.csv: {uci_df.shape}")
     
     return smoke_df, uci_df
 

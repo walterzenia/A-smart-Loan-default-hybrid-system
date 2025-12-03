@@ -98,9 +98,9 @@ def batch_prediction(model, model_name):
     if model_type == 'ensemble':
         st.info(" **Ensemble Model:** Requires hybrid features (traditional + behavioral). Use `smoke_hybrid_features.csv`.")
     elif model_type == 'traditional':
-        st.info(" **Traditional Model:** Requires Home Credit features. Use `smoke_engineered.csv`.")
+        st.info(" **Traditional Model:** Requires Home Credit features. Use `traditional_test_data.csv`.")
     elif model_type == 'behavioral':
-        st.info(" **Behavioral Model:** Requires UCI credit card features. Use `uci_interface_test.csv`.")
+        st.info(" **Behavioral Model:** Requires UCI credit card features. Use `behavioral_test_data.csv`.")
     
     uploaded_file = st.file_uploader(" Upload CSV file", type=["csv"])
     
@@ -252,10 +252,10 @@ def manual_prediction(model, model_name):
                     The traditional model expects 487 features from bureau reports, previous loans, installments, etc., but manual input provides only ~24 features.
                     
                     **Solution:**  
-                    Use **Batch Prediction** mode and upload `smoke_engineered.csv` which contains all traditional features.
+                    Use **Batch Prediction** mode and upload `traditional_test_data.csv` which contains all traditional features.
                     """)
                 elif model_type == 'behavioral':
-                    st.info(" Behavioral model requires 31 UCI credit card features. For best results, upload `uci_interface_test.csv`.")
+                    st.info(" Behavioral model requires 44 UCI credit card features. For best results, upload `behavioral_test_data.csv`.")
                 return
             
             display_prediction_results(predictions, probabilities, model_type)
@@ -271,7 +271,7 @@ def traditional_input_form():
         This manual form only provides **11 simplified fields** for quick testing.
         
         **Result:** Predictions may fail or be unreliable due to missing features from the other 6 datasets.  
-        **Recommended:** Use **Batch Prediction** with `smoke_engineered.csv` for accurate traditional model predictions.
+        **Recommended:** Use **Batch Prediction** with `traditional_test_data.csv` for accurate traditional model predictions.
         """)
         
         col1, col2, col3 = st.columns(3)

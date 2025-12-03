@@ -43,7 +43,7 @@ def show():
             st.success(f" Loaded {len(df)} rows and {len(df.columns)} columns")
     else:
         # Load sample data
-        sample_path = "data/smoke_engineered.csv"
+        sample_path = "data/traditional_test_data.csv"
         if Path(sample_path).exists():
             df = load_data(sample_path)
             st.info(f" Using sample dataset: {sample_path}")

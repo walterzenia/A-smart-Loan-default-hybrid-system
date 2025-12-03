@@ -1,6 +1,6 @@
-# 🔄 Data Flow After Input - Single Applicant Prediction
+#  Data Flow After Input - Single Applicant Prediction
 
-## Current Issue: Missing Feature Engineering! ⚠️
+## Current Issue: Missing Feature Engineering! 
 
 ### What Happens Now (INCOMPLETE):
 
@@ -50,7 +50,7 @@ The web form can only capture ~24 basic features from a single applicant (demogr
 
 #### Missing: BILL_AMT1-6 and PAY_AMT1-6 (not in form)
 
-#### Engineered Features (20 features) - ❌ NOT CALCULATED:
+#### Engineered Features (20 features) -  NOT CALCULATED:
 
 12. total_billed_amount (sum of BILL_AMT1-6)
 13. total_payment_amount (sum of PAY_AMT1-6)
@@ -91,7 +91,7 @@ User fills form → Submit button clicked → Input data created
                                               ↓
                                       Model.predict_proba()
                                               ↓
-                                   ✅ Predictions + Probabilities
+                                    Predictions + Probabilities
                                               ↓
                                   display_prediction_results()
 ```
@@ -100,7 +100,7 @@ User fills form → Submit button clicked → Input data created
 
 ## Solutions Needed:
 
-### Option 1: Apply Feature Engineering in Form Function ✅ BEST
+### Option 1: Apply Feature Engineering in Form Function  BEST
 
 **Modify behavioral_input_form():**
 
@@ -112,7 +112,7 @@ def behavioral_input_form():
         # Create base dataframe
         input_data = pd.DataFrame({...})
 
-        # 🔧 APPLY FEATURE ENGINEERING HERE
+        #  APPLY FEATURE ENGINEERING HERE
         from feature_engineering import behaviorial_features
         input_data = behaviorial_features(input_data)
 

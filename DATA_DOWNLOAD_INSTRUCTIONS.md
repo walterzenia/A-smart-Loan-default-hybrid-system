@@ -53,8 +53,8 @@ The following essential files ARE included in the repository:
 ### Working Datasets
 
 - `smoke_hybrid_features.csv` (58 MB) - Preprocessed training data
-- `smoke_engineered.csv` (49 MB) - Engineered features
-- `UCI_Credit_Card.csv` (3 MB) - Behavioral dataset
+- `traditional_test_data.csv` (49 MB) - Engineered features
+- `behavioral_full_data.csv` (3 MB) - Behavioral dataset (full)
 - `uci_hybrid_features.csv` (1 MB) - UCI engineered features
 
 ### Test Cases
@@ -106,8 +106,8 @@ If you need to train models from scratch, you MUST download the large files:
 
 ```bash
 # After downloading Home Credit files to data/:
-python src/train_traditional.py --data data/smoke_engineered.csv --output models/Traditional_model.pkl
-python src/train_behaviorial.py --data data/UCI_Credit_Card.csv --output models/Behaviorial_model.pkl
+python src/train_traditional.py --data data/traditional_test_data.csv --output models/Traditional_model.pkl
+python src/train_behaviorial.py --data data/behavioral_full_data.csv --output models/Behaviorial_model.pkl
 python src/train_ensemble_hybrid.py
 ```
 

@@ -320,9 +320,9 @@ Loan Default Hybrid System/
 │   ├── model_ensemble_wrapper.pkl    ← NEW: Ready-to-use wrapper
 │   └── ensemble_metadata.pkl         ← NEW: Metadata
 ├── data/
-│   ├── smoke_engineered.csv          ← Original data
+│   ├── traditional_test_data.csv     ← Original data
 │   ├── smoke_hybrid_features.csv     ← NEW: With behavioral features
-│   ├── uci_interface_test.csv        ← Original UCI data
+│   ├── behavioral_test_data.csv      ← Original UCI data
 │   └── uci_hybrid_features.csv       ← NEW: With traditional features
 └── HYBRID_MODEL_SUMMARY.md          ← This file
 ```

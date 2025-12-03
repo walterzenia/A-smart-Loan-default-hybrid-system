@@ -24,5 +24,5 @@ for p in paths:
         print('  Failed to load model:')
         traceback.print_exc()
 
-holdout = Path('data/smoke_engineered.csv')
+holdout = Path('data/traditional_test_data.csv')
 print('\nHoldout exists:', holdout.exists())

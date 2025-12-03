@@ -69,8 +69,8 @@ This project implements a sophisticated loan default prediction system that leve
 │                    Data Sources                              │
 ├──────────────────────┬──────────────────────────────────────┤
 │  Home Credit Data    │    UCI Credit Card Data              │
-│  • application_train │    • UCI_Credit_Card.csv             │
-│  • bureau            │    • uci_interface_test.csv          │
+│  • application_train │    • behavioral_full_data.csv        │
+│  • bureau            │    • behavioral_test_data.csv        │
 │  • previous_app      │                                      │
 │  • installments      │                                      │
 │  • pos_cash          │                                      │
@@ -488,7 +488,7 @@ def simulate_behavioral_features_for_smoke(smoke_df):
     return behaviorial_features(behavioral_sim)
 ```
 
-### For UCI Users (uci_interface_test.csv):
+### For UCI Users (behavioral_test_data.csv):
 
 ```python
 def simulate_traditional_features_for_uci(uci_df):
@@ -595,9 +595,9 @@ pip install -r requirement.txt
 
 Ensure these files exist in `data/`:
 
-- `smoke_engineered.csv`
-- `UCI_Credit_Card.csv`
-- `uci_interface_test.csv`
+- `traditional_test_data.csv`
+- `behavioral_full_data.csv`
+- `behavioral_test_data.csv`
 - `smoke_hybrid_features.csv`
 
 ### Step 5: Verify Model Files

@@ -11,8 +11,8 @@ from sklearn.model_selection import train_test_split
 from pathlib import Path
 
 def main():
-    print("Loading smoke_engineered.csv...")
-    df = pd.read_csv("data/smoke_engineered.csv")
+    print("Loading traditional_test_data.csv...")
+    df = pd.read_csv("data/traditional_test_data.csv")
     print(f"Loaded dataset with shape: {df.shape}")
     
     # Check for target

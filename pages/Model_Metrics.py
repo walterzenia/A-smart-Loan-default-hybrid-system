@@ -303,12 +303,12 @@ def display_stored_metrics(model, model_name, model_type):
                     # Try behavioral test data first
                     test_data_file = "models/Behaviorial_model_test_data.csv"
                     target_col = 'default.payment.next.month'
-                    fallback_file = "data/UCI_Credit_Card.csv"
+                    fallback_file = "data/behavioral_test_data.csv"
                 elif model_type == 'traditional':
                     # Try traditional test data first
                     test_data_file = "models/Traditional_model_test_data.csv"
                     target_col = 'TARGET'
-                    fallback_file = "data/smoke_engineered.csv"
+                    fallback_file = "data/traditional_test_data.csv"
                 else:
                     test_data_file = None
                     fallback_file = None
@@ -453,6 +453,106 @@ def display_stored_metrics(model, model_name, model_type):
     except Exception as e:
         pass
 
+def show_confusion_matrix_for_model(model_type):
+    """Show confusion matrix for the selected model type"""
+    st.markdown("---")
+    st.subheader("Model Confusion Matrix")
+    
+    if model_type == 'traditional':
+        st.markdown("### Traditional Model")
+        model_path = "models/Traditional_model.pkl"
+        test_path = "data/traditional_test_data.csv"
+        target_col = 'TARGET'
+        color_scheme = 'Blues'
+        
+    elif model_type == 'behavioral':
+        st.markdown("### Behavioral Model")
+        model_path = "models/Behaviorial_model.pkl"
+        test_path = "data/behavioral_test_data.csv"
+        target_col = 'default.payment.next.month'
+        color_scheme = 'Greens'
+    else:
+        return  # Don't show confusion matrix for ensemble
+    
+    if Path(model_path).exists() and Path(test_path).exists():
+        try:
+            model = load_model(model_path)
+            df_test = load_data(test_path)
+            
+            if df_test is not None and model is not None:
+                if target_col not in df_test.columns:
+                    target_col = 'TARGET' if 'TARGET' in df_test.columns else 'target'
+                
+                if target_col in df_test.columns:
+                    X_test = df_test.drop(target_col, axis=1)
+                    y_test = df_test[target_col].values
+                    
+                    # Remove NaN values
+                    valid_mask = ~pd.isna(y_test)
+                    X_test = X_test[valid_mask]
+                    y_test = y_test[valid_mask]
+                    
+                    # Split for testing
+                    from sklearn.model_selection import train_test_split
+                    _, X_test, _, y_test = train_test_split(X_test, y_test, test_size=0.2, random_state=42, stratify=y_test)
+                    
+                    # Get predictions
+                    y_pred, y_proba = get_predictions(model, X_test)
+                    
+                    if y_pred is not None:
+                        # Compute metrics
+                        from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+                        
+                        cm = confusion_matrix(y_test, y_pred)
+                        
+                        col1, col2 = st.columns([2, 1])
+                        
+                        with col1:
+                            # Plot confusion matrix
+                            fig = go.Figure(data=go.Heatmap(
+                                z=cm,
+                                x=['Predicted 0', 'Predicted 1'],
+                                y=['Actual 0', 'Actual 1'],
+                                colorscale=color_scheme,
+                                text=cm,
+                                texttemplate='%{text}',
+                                textfont={"size": 20}
+                            ))
+                            
+                            fig.update_layout(
+                                title="Confusion Matrix",
+                                xaxis_title="Predicted",
+                                yaxis_title="Actual",
+                                height=400
+                            )
+                            
+                            st.plotly_chart(fig, use_container_width=True)
+                        
+                        with col2:
+                            # Show metrics
+                            accuracy = accuracy_score(y_test, y_pred)
+                            precision = precision_score(y_test, y_pred, zero_division=0)
+                            recall = recall_score(y_test, y_pred, zero_division=0)
+                            f1 = f1_score(y_test, y_pred, zero_division=0)
+                            auc = roc_auc_score(y_test, y_proba) if y_proba is not None else 0
+                            
+                            st.metric("Accuracy", f"{accuracy:.4f}")
+                            st.metric("Precision", f"{precision:.4f}")
+                            st.metric("Recall", f"{recall:.4f}")
+                            st.metric("F1 Score", f"{f1:.4f}")
+                            st.metric("AUC-ROC", f"{auc:.4f}")
+                    else:
+                        st.warning("Could not generate predictions")
+                else:
+                    st.warning(f"Target column '{target_col}' not found")
+            else:
+                st.warning("Could not load model or data")
+        except Exception as e:
+            st.error(f"Error evaluating model: {str(e)}")
+    else:
+        st.warning(f"{model_type.capitalize()} model or test data not found")
+
+
 def show():
     st.title(" Model Performance Metrics")
     st.markdown("View training metrics and performance stored in model files")
@@ -488,6 +588,10 @@ def show():
             st.markdown(" **Traditional Model**")
         elif model_type == 'behavioral':
             st.markdown(" **Behavioral Model**")
+    
+    # Show confusion matrix for Traditional and Behavioral models only
+    if model_type in ['traditional', 'behavioral']:
+        show_confusion_matrix_for_model(model_type)
     
     # Load model
     with st.spinner("Loading model..."):

@@ -3,7 +3,7 @@
 This script will:
  - load raw datasets via `get_dataset()`
  - run the `hybrid` feature engineering pipeline
- - save engineered features to `data/smoke_engineered.csv`
+ - save engineered features to `data/traditional_test_data.csv`
  - sample up to 5000 rows (rows that have the target) and train a small model to verify pipeline
 
 Run from repo root with the project's venv active.
@@ -55,7 +55,7 @@ def main():
     logger.info("Running hybrid feature engineering on sampled subset... this may take a while depending on dataset size")
     features_df = traditional_features(apps_small, bureau_small, bureau_bal_small, prev_small, pos_bal_small, install_small, card_bal_small)
 
-    out_path = data_path("smoke_engineered.csv")
+    out_path = data_path("traditional_test_data.csv")
     logger.info("Saving engineered features to %s", out_path)
     features_df.to_csv(out_path, index=False)
 
