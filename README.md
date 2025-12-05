@@ -79,12 +79,12 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 
 **Major Enhancement: Centralized Data Cleaning Module**
 
-- ✅ Created `src/data_cleaning.py` with 9 core cleaning functions
-- ✅ Consolidated all data cleaning logic from 6+ files into single module
-- ✅ Updated all training scripts to use centralized cleaning
-- ✅ Updated prediction pipeline to use centralized cleaning
-- ✅ Removed inline cleaning code for better maintainability
-- ✅ Updated all documentation and architecture diagrams
+-  Created `src/data_cleaning.py` with 9 core cleaning functions
+-  Consolidated all data cleaning logic from 6+ files into single module
+-  Updated all training scripts to use centralized cleaning
+-  Updated prediction pipeline to use centralized cleaning
+-  Removed inline cleaning code for better maintainability
+-  Updated all documentation and architecture diagrams
 
 **Benefits:**
 
