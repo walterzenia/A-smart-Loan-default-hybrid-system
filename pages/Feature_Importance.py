@@ -126,82 +126,144 @@ def global_shap(model):
     """Global SHAP summary plot"""
     st.markdown("#### Global SHAP Summary")
     
-    st.info("""
-    ℹ **Computing SHAP values requires:**
-    - Sample dataset for analysis
-    - SHAP library installed
-    - May take several minutes for large datasets
-    """)
+    # Automatically load appropriate test data based on model type
+    model_type = None
+    test_data_path = None
     
-    # Data upload for SHAP
-    uploaded_file = st.file_uploader("Upload sample data (CSV) for SHAP analysis", type=["csv"])
+    # Detect model type from model attributes or name
+    if hasattr(model, 'meta_model'):
+        model_type = 'ensemble'
+        test_data_path = "data/smoke_hybrid_features.csv"
+    elif hasattr(model, 'n_features_in_'):
+        if model.n_features_in_ > 100:  # Traditional has 487 features
+            model_type = 'traditional'
+            test_data_path = "data/traditional_test_data.csv"
+        else:  # Behavioral has 44 features
+            model_type = 'behavioral'
+            test_data_path = "data/behavioral_test_data.csv"
     
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        
-        # Sample for performance
-        max_samples = st.slider("Max samples for SHAP computation", 100, 1000, 500)
-        
-        if len(df) > max_samples:
-            df_sample = df.sample(max_samples, random_state=42)
-            st.info(f"Sampled {max_samples} rows from {len(df)} for SHAP analysis")
+    # Try to load the test data
+    df = None
+    if test_data_path and Path(test_data_path).exists():
+        try:
+            df = pd.read_csv(test_data_path)
+            st.success(f"Loaded {model_type} test data: {test_data_path}")
+        except Exception as e:
+            st.error(f"Error loading test data: {e}")
+    
+    if df is None:
+        st.warning("Could not automatically load test data. Please upload a CSV file.")
+        uploaded_file = st.file_uploader("Upload sample data (CSV) for SHAP analysis", type=["csv"])
+        if uploaded_file:
+            df = pd.read_csv(uploaded_file)
         else:
-            df_sample = df
-        
-        if st.button(" Compute SHAP Values", type="primary"):
-            try:
-                import shap
+            return
+    
+    # Sample for performance
+    max_samples = st.slider("Max samples for SHAP computation", 100, 1000, 500)
+    
+    if len(df) > max_samples:
+        df_sample = df.sample(max_samples, random_state=42)
+        st.info(f"Sampled {max_samples} rows from {len(df)} for SHAP analysis")
+    else:
+        df_sample = df
+    
+    if st.button("🔍 Compute SHAP Values", type="primary"):
+        try:
+            import shap
+            
+            with st.spinner("Computing SHAP values... This may take a few minutes"):
+                # Prepare data
+                X = df_sample.copy()
                 
-                with st.spinner("Computing SHAP values... This may take a few minutes"):
-                    # Get final estimator
+                # Remove target column if present
+                target_cols = ['TARGET', 'target', 'default.payment.next.month']
+                for col in target_cols:
+                    if col in X.columns:
+                        X = X.drop(col, axis=1)
+                
+                # Handle ensemble model - need to generate meta-features
+                if hasattr(model, 'meta_model'):
+                    # For ensemble, we need the meta-features (predictions from base models)
+                    # The ensemble wrapper's predict method generates these
+                    st.info("📊 Generating meta-features for ensemble model...")
+                    
+                    # Get meta-features using the wrapper's method
+                    if hasattr(model, '_prepare_meta_features'):
+                        X_meta = model._prepare_meta_features(X)
+                    else:
+                        # Fallback: manually generate if method not available
+                        st.warning("⚠️ Using base model predictions as meta-features")
+                        from apps.utils import align_features
+                        
+                        # Get predictions from traditional model
+                        X_trad = align_features(X, model.traditional_model)
+                        trad_pred = model.traditional_model.predict(X_trad)
+                        trad_proba = model.traditional_model.predict_proba(X_trad)[:, 1]
+                        
+                        # Get predictions from behavioral model
+                        X_behav = align_features(X, model.behavioral_model)
+                        behav_pred = model.behavioral_model.predict(X_behav)
+                        behav_proba = model.behavioral_model.predict_proba(X_behav)[:, 1]
+                        
+                        # Create meta-features
+                        X_meta = pd.DataFrame({
+                            'trad_pred': trad_pred,
+                            'trad_proba': trad_proba,
+                            'behav_pred': behav_pred,
+                            'behav_proba': behav_proba
+                        })
+                    
+                    final_estimator = model.meta_model
+                    X_for_shap = X_meta
+                    
+                # Handle regular models
+                else:
+                    # Get final estimator from pipeline
                     if hasattr(model, 'named_steps'):
                         final_estimator = list(model.named_steps.values())[-1]
                     else:
                         final_estimator = model
                     
-                    # Prepare data
-                    X = df_sample.copy()
-                    if 'TARGET' in X.columns:
-                        X = X.drop('TARGET', axis=1)
-                    
                     # Align features
                     from apps.utils import align_features
-                    X_aligned = align_features(X, model)
-                    
-                    # Compute SHAP
-                    explainer = shap.TreeExplainer(final_estimator)
-                    shap_values = explainer.shap_values(X_aligned)
-                    
-                    # Plot
-                    st.success(" SHAP values computed successfully!")
-                    
-                    fig, ax = plt.subplots(figsize=(10, 8))
-                    shap.summary_plot(shap_values, X_aligned, plot_type="bar", show=False)
-                    st.pyplot(fig)
-                    
-                    st.markdown("---")
-                    
-                    # Detailed summary
-                    fig2, ax2 = plt.subplots(figsize=(10, 8))
-                    shap.summary_plot(shap_values, X_aligned, show=False)
-                    st.pyplot(fig2)
-                    
-                    st.markdown("""
-                    **How to read this plot:**
-                    - Each dot is a sample
-                    - Red = High feature value
-                    - Blue = Low feature value
-                    - X-axis = SHAP value (impact on prediction)
-                    - Positive SHAP = Increases default probability
-                    - Negative SHAP = Decreases default probability
-                    """)
-                    
-            except ImportError:
-                st.error("SHAP library not installed. Install with: pip install shap")
-            except Exception as e:
-                st.error(f"SHAP computation failed: {e}")
-    else:
-        st.warning("Please upload a CSV file to compute SHAP values")
+                    X_for_shap = align_features(X, model)
+                
+                # Compute SHAP
+                explainer = shap.TreeExplainer(final_estimator)
+                shap_values = explainer.shap_values(X_for_shap)
+                
+                # Plot
+                st.success("✅ SHAP values computed successfully!")
+                
+                st.markdown("#### Feature Importance (Mean Absolute SHAP)")
+                fig, ax = plt.subplots(figsize=(10, 8))
+                shap.summary_plot(shap_values, X_for_shap, plot_type="bar", show=False)
+                st.pyplot(fig)
+                
+                st.markdown("---")
+                
+                # Detailed summary
+                st.markdown("#### SHAP Summary Plot (Feature Impact)")
+                fig2, ax2 = plt.subplots(figsize=(10, 8))
+                shap.summary_plot(shap_values, X_for_shap, show=False)
+                st.pyplot(fig2)
+                
+                st.markdown("""
+                **How to read this plot:**
+                - Each dot is a sample
+                - Red = High feature value
+                - Blue = Low feature value
+                - X-axis = SHAP value (impact on prediction)
+                - Positive SHAP = Increases default probability
+                - Negative SHAP = Decreases default probability
+                """)
+                
+        except ImportError:
+            st.error("SHAP library not installed. Install with: pip install shap")
+        except Exception as e:
+            st.error(f"SHAP computation failed: {e}")
+            st.exception(e)
 
 def local_shap(model):
     """Local SHAP explanation for single prediction"""

@@ -179,9 +179,10 @@ This system employs **LightGBM** (Light Gradient Boosting Machine), an efficient
 optimized for high performance and accuracy.
 
 **Available Models:**
-- **Traditional Features**: Credit history, income, demographics (AUC: ~0.75)
-- **Behavioral Features**: Payment patterns, spending behavior (AUC: ~0.76)
-- ** Ensemble Hybrid**: Combined traditional + behavioral **(AUC: 0.8577 - Best Performance!)**
+- **Traditional Features**: Credit history, income, demographics (AUC: ~0.80)
+- **Behavioral Features**: Payment patterns, spending behavior (AUC: ~0.77)
+- **Ensemble Hybrid**: CatBoost meta-learner combining Traditional + Behavioral **(Recall: 89.3% @ 0.32 threshold - Optimized for Default Detection!)**
+  - Note: AUC 0.8514 vs LightGBM's 0.8577 - prioritizes catching defaults over discrimination
 """)
 
 st.markdown("---")

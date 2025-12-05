@@ -17,7 +17,9 @@ ENV/
 
 # Jupyter Notebook
 .ipynb_checkpoints/
-*.ipynb
+# Allow Statistical Analysis notebooks
+!Chapter4_Statistical_Analysis.ipynb
+!Statistical_Analysis.ipynb
 
 # IDEs
 .vscode/
@@ -50,6 +52,32 @@ CHAPTER_4_RESULTS_AND_ANALYSIS.pdf
 .pytest_cache/
 .coverage
 htmlcov/
+tests/
+
+# Temporary analysis and training files
+*test*.py
+*debug*.py
+*compare*.py
+*tune*.py
+*train_*.py
+# Allow CatBoost training script
+!src/train_ensemble_catboost.py
+*verify*.py
+*explain*.py
+catboost_info/
+*.log
+
+# Duplicate documentation formats (keep .md only)
+*.html
+*.pdf
+
+# Temporary data files
+data/*test*.csv
+data/*comparison*.csv
+data/*hybrid*.csv
+!data/smoke_hybrid_features.csv
+!data/test_ensemble_hybrid_preprocessed.csv
+!data/uci_hybrid_features.csv
 
 # Large training data files (not needed for deployed app)
 data/application_train.csv

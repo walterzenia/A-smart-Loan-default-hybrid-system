@@ -5,6 +5,8 @@ seaborn
 scikit-learn
 xgboost
 lightgbm
+catboost>=1.2
+imbalanced-learn
 mlflow
 shap
 plotly

@@ -241,7 +241,7 @@ def manual_prediction(model, model_name):
                 if model_type == 'ensemble':
                     st.warning("""
                     **Why it failed:**  
-                    The ensemble model expects 518 features (487 traditional + 31 behavioral), but manual input provides only ~55 features.
+                    The ensemble model expects 531 features (487 traditional + 44 behavioral), but manual input provides only ~55 features.
                     
                     **Solution:**  
                     Use **Batch Prediction** mode and upload `smoke_hybrid_features.csv` which contains all required features.
@@ -434,8 +434,8 @@ def hybrid_input_form():
         st.markdown("#### Ensemble Model Features")
         st.error("""
         ⚠️ **Critical Limitation:**  
-        The ensemble model requires **487 traditional features** + **31 behavioral features** (518 total).  
-        This manual form can only provide **~24 traditional + 31 behavioral features** (~55 total).
+        The ensemble model requires **487 traditional features** + **44 behavioral features** (531 total).  
+        This manual form can only provide **~24 traditional + 44 behavioral features** (~68 total).
         
         **Result:** Manual predictions will likely fail due to missing features.  
         **Strongly Recommended:** Use **Batch Prediction** with `smoke_hybrid_features.csv` for ensemble model predictions.

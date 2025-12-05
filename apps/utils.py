@@ -228,22 +228,59 @@ def plot_target_distribution(df, target_col='TARGET'):
 def plot_feature_importance(model, top_n=20):
     """Plot feature importance from model."""
     try:
-        # Get final estimator
-        if hasattr(model, 'named_steps'):
+        # Handle ensemble wrapper
+        if hasattr(model, 'meta_model'):
+            # For ensemble, get meta-model's feature importance
+            meta_model = model.meta_model
+            if hasattr(meta_model, 'feature_importance'):
+                # LightGBM Booster
+                importances = meta_model.feature_importance(importance_type='gain')
+                feature_names = meta_model.feature_name()
+            elif hasattr(meta_model, 'get_feature_importance'):
+                # CatBoost
+                importances = meta_model.get_feature_importance()
+                if hasattr(meta_model, 'feature_names_'):
+                    feature_names = meta_model.feature_names_
+                else:
+                    feature_names = [f'Meta-Feature {i}' for i in range(len(importances))]
+            elif hasattr(meta_model, 'feature_importances_'):
+                importances = meta_model.feature_importances_
+                feature_names = [f'Meta-Feature {i}' for i in range(len(importances))]
+            else:
+                return None
+        # Handle pipeline models
+        elif hasattr(model, 'named_steps'):
             final_estimator = list(model.named_steps.values())[-1]
+            if not hasattr(final_estimator, 'feature_importances_'):
+                return None
+            importances = final_estimator.feature_importances_
+            # Get feature names
+            if hasattr(model, 'feature_names_in_'):
+                feature_names = model.feature_names_in_
+            else:
+                feature_names = [f'Feature {i}' for i in range(len(importances))]
+        # Handle CatBoost models
+        elif hasattr(model, 'get_feature_importance'):
+            importances = model.get_feature_importance()
+            if hasattr(model, 'feature_names_'):
+                feature_names = model.feature_names_
+            else:
+                feature_names = [f'Feature {i}' for i in range(len(importances))]
+        # Handle regular models with feature_importances_
+        elif hasattr(model, 'feature_importances_'):
+            importances = model.feature_importances_
+            if hasattr(model, 'feature_names_in_'):
+                feature_names = model.feature_names_in_
+            elif hasattr(model, 'feature_name_'):
+                feature_names = model.feature_name_
+            else:
+                feature_names = [f'Feature {i}' for i in range(len(importances))]
+        # Handle LightGBM Booster
+        elif hasattr(model, 'feature_importance'):
+            importances = model.feature_importance(importance_type='gain')
+            feature_names = model.feature_name()
         else:
-            final_estimator = model
-        
-        if not hasattr(final_estimator, 'feature_importances_'):
             return None
-        
-        importances = final_estimator.feature_importances_
-        
-        # Get feature names
-        if hasattr(model, 'feature_names_in_'):
-            feature_names = model.feature_names_in_
-        else:
-            feature_names = [f'Feature {i}' for i in range(len(importances))]
         
         # Create dataframe
         importance_df = pd.DataFrame({
@@ -288,29 +325,60 @@ def plot_confusion_matrix(y_true, y_pred):
     return fig
 
 def plot_roc_curve(y_true, y_proba):
-    """Plot ROC curve."""
-    fpr, tpr, _ = roc_curve(y_true, y_proba)
+    """Plot enhanced ROC curve with additional metrics."""
+    fpr, tpr, thresholds = roc_curve(y_true, y_proba)
     auc_score = roc_auc_score(y_true, y_proba)
     
+    # Find optimal threshold (Youden's J statistic)
+    j_scores = tpr - fpr
+    optimal_idx = np.argmax(j_scores)
+    optimal_threshold = thresholds[optimal_idx]
+    optimal_fpr = fpr[optimal_idx]
+    optimal_tpr = tpr[optimal_idx]
+    
     fig = go.Figure()
+    
+    # ROC Curve
     fig.add_trace(go.Scatter(
         x=fpr, y=tpr,
-        name=f'ROC Curve (AUC = {auc_score:.3f})',
+        name=f'ROC Curve (AUC = {auc_score:.4f})',
         mode='lines',
-        line=dict(color='#636EFA', width=3)
+        line=dict(color='#636EFA', width=3),
+        hovertemplate='FPR: %{x:.3f}<br>TPR: %{y:.3f}<br>Threshold: %{text:.3f}<extra></extra>',
+        text=thresholds
     ))
+    
+    # Optimal point
+    fig.add_trace(go.Scatter(
+        x=[optimal_fpr], y=[optimal_tpr],
+        name=f'Optimal (threshold={optimal_threshold:.3f})',
+        mode='markers',
+        marker=dict(color='red', size=12, symbol='star'),
+        hovertemplate=f'Optimal Point<br>FPR: {optimal_fpr:.3f}<br>TPR: {optimal_tpr:.3f}<br>Threshold: {optimal_threshold:.3f}<extra></extra>'
+    ))
+    
+    # Random classifier
     fig.add_trace(go.Scatter(
         x=[0, 1], y=[0, 1],
-        name='Random Classifier',
+        name='Random Classifier (AUC = 0.500)',
         mode='lines',
         line=dict(color='gray', width=2, dash='dash')
     ))
+    
     fig.update_layout(
-        title='ROC Curve',
-        xaxis_title='False Positive Rate',
-        yaxis_title='True Positive Rate',
+        title=dict(
+            text=f'ROC Curve Analysis<br><sub>AUC: {auc_score:.4f} | Optimal Threshold: {optimal_threshold:.3f}</sub>',
+            x=0.5,
+            xanchor='center'
+        ),
+        xaxis_title='False Positive Rate (1 - Specificity)',
+        yaxis_title='True Positive Rate (Sensitivity/Recall)',
         template='plotly_white',
-        height=500
+        height=550,
+        showlegend=True,
+        legend=dict(x=0.6, y=0.1),
+        xaxis=dict(range=[-0.02, 1.02]),
+        yaxis=dict(range=[-0.02, 1.02])
     )
     return fig
 
