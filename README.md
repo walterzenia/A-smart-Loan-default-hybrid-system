@@ -29,13 +29,13 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 
 **Major Enhancement: Chapter 4 Statistical Validation Analysis**
 
-- ✅ Created comprehensive Jupyter notebook for statistical significance testing
-- ✅ Implemented McNemar's Test (p < 0.001) - validates ensemble superiority
-- ✅ Implemented DeLong's Test for AUC comparison - confirms significant improvements
-- ✅ Bootstrap Confidence Intervals (1000 iterations) for robust performance estimates
-- ✅ Interactive Plotly visualizations for Precision-Recall and ROC curves
-- ✅ All statistical tests validate documented AUC values (Traditional: 0.7970, Behavioral: 0.7714, Ensemble: 0.8509)
-- ✅ Publication-ready analysis with detailed validation summary
+-  Created comprehensive Jupyter notebook for statistical significance testing
+-  Implemented McNemar's Test (p < 0.001) - validates ensemble superiority
+-  Implemented DeLong's Test for AUC comparison - confirms significant improvements
+-  Bootstrap Confidence Intervals (1000 iterations) for robust performance estimates
+-  Interactive Plotly visualizations for Precision-Recall and ROC curves
+-  All statistical tests validate documented AUC values (Traditional: 0.7970, Behavioral: 0.7714, Ensemble: 0.8509)
+-  Publication-ready analysis with detailed validation summary
 
 **Statistical Evidence:**
 
@@ -58,19 +58,14 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 
 **Major Enhancement: CatBoost Ensemble Upgrade**
 
-- ✅ Replaced LightGBM meta-learner with CatBoost for ensemble model
-- ✅ **Recall improved from 48% to 88.89%** (40 percentage point increase)
-- ✅ AUC maintained at 0.8509 (excellent discrimination)
-- ✅ Catches **240 out of 270 defaults** at optimal threshold (0.32)
-- ✅ Auto class imbalance handling with `auto_class_weights='Balanced'`
-- ✅ Simplified meta-features from 27 to 7 (more efficient)
-- ✅ Updated all documentation and metrics displays
+-  Replaced LightGBM meta-learner with CatBoost for ensemble model
+-  **Recall improved from 48% to 88.89%** (40 percentage point increase)
+-  AUC maintained at 0.8509 (excellent discrimination)
+-  Catches **240 out of 270 defaults** at optimal threshold (0.32)
+-  Auto class imbalance handling with `auto_class_weights='Balanced'`
+-  Simplified meta-features from 27 to 7 (more efficient)
+-  Updated all documentation and metrics displays
 
-**Business Impact:**
-
-- **$262,500 - $420,000 additional savings** from catching 110+ more defaults
-- Optimal for high-stakes lending where missing a default is costly
-- Threshold adjustment capability for different risk appetites
 
 **Technical Details:**
 
@@ -473,7 +468,7 @@ Level 2 (CatBoost Meta-Learner):
    ├─ 146 iterations (early stopped)
    ├─ AUC: 0.8509
    ├─ Recall @ 0.5: 78.15%
-   └─ Recall @ 0.32: 88.89% ⭐
+   └─ Recall @ 0.32: 88.89% 
 ```
 
 **Training Process**:
