@@ -20,15 +20,10 @@ class EnsembleHybridModel:
         self.traditional_features = trad_feats  # Keep ALL features including IDs for base model predictions
         self.behavioral_features = behav_feats   # Keep ALL features including IDs for base model predictions
         
-        # Define ID columns to exclude ONLY from meta-features (not from base model predictions)
-        exclude_cols = ['SK_ID_CURR', 'SK_ID_PREV', 'SK_ID_BUREAU', 'ID', 'index']
-        
-        # Store key features used in meta-model training (excluding ID columns)
-        filtered_trad = [f for f in trad_feats if f not in exclude_cols]
-        filtered_behav = [f for f in behav_feats if f not in exclude_cols]
-        
-        self.key_traditional = filtered_trad[:10] if len(filtered_trad) >= 10 else filtered_trad
-        self.key_behavioral = filtered_behav[:10] if len(filtered_behav) >= 10 else filtered_behav
+        # For CatBoost ensemble trained with only 7 meta-features
+        # No additional key features needed (simplified approach)
+        self.key_traditional = []
+        self.key_behavioral = []
     
     def predict_proba(self, X):
         """Predict probabilities using the ensemble"""

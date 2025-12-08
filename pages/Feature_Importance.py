@@ -3,6 +3,7 @@ Feature Importance Page - Model Interpretability
 """
 import streamlit as st
 import pandas as pd
+import numpy as np
 import sys
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -46,7 +47,7 @@ def show():
     st.markdown("---")
     
     # Tabs for different interpretability views
-    tab1, tab2, tab3 = st.tabs(["Global Feature Importance", " SHAP Analysis", " Feature Details"])
+    tab1, tab2, tab3 = st.tabs(["Feature Importance", " SHAP Analysis", " Feature Details"])
     
     with tab1:
         global_importance(model)
@@ -59,8 +60,21 @@ def show():
 
 def global_importance(model):
     """Display global feature importance"""
-    st.markdown("### Global Feature Importance")
+    st.markdown("### Feature Importance")
     st.markdown("Shows which features have the most impact on predictions across all samples")
+    
+    # Show info about ensemble meta-features
+    if hasattr(model, 'meta_model'):
+        meta_model = model.meta_model
+        if hasattr(meta_model, 'feature_names_'):
+            num_features = len(meta_model.feature_names_)
+            st.markdown(f"""
+            **Ensemble Model Meta-Features:** This model uses {num_features} meta-features generated from the base models' predictions:
+            - Core predictions (pred_traditional, pred_behavioral)
+            - Derived features (pred_avg, pred_max, pred_min, pred_diff, pred_ratio)
+            
+            These meta-features capture the agreement/disagreement patterns between base models.
+            """)
     
     top_n = st.slider("Number of top features to display", 10, 50, 20)
     
@@ -69,62 +83,62 @@ def global_importance(model):
     if fig:
         st.plotly_chart(fig, use_container_width=True)
         
-        st.markdown("---")
-        st.markdown("#### Interpretation Guide")
+        #st.markdown("---")
+        # st.markdown("#### Interpretation Guide")
         
-        col1, col2 = st.columns(2)
+       # col1, col2 = st.columns(2)
         
-        with col1:
-            st.info("""
-            **What is Feature Importance?**
+        # with col1:
+           # st.markdown("""
+           # **What is Feature Importance?**
             
-            Feature importance measures how much each feature contributes to the model's predictions.
+           # Feature importance measures how much each feature contributes to the model's predictions.
             
-            - **Higher values** = More influential features
-            - **Lower values** = Less influential features
+           # - **Higher values** = More influential features
+           # - **Lower values** = Less influential features
             
-            The model uses these features to split decision trees.
-            """)
+           # The model uses these features to split decision trees.
+          #   """)
         
-        with col2:
-            st.success("""
-            **How to Use This Information:**
+        # with col2:
+          #  st.success("""
+           # **How to Use This Information:**
             
-            - Focus data quality efforts on top features
-            - Investigate why certain features rank high/low
-            - Consider feature engineering for high-impact variables
-            - Remove low-importance features to simplify model
-            """)
+            #- Focus data quality efforts on top features
+            #- Investigate why certain features rank high/low
+            #- Consider feature engineering for high-impact variables
+            #- Remove low-importance features to simplify model
+            #""")
     else:
         st.warning("Could not generate feature importance plot. Model may not support feature_importances_.")
 
 def shap_analysis(model):
     """SHAP-based model interpretability"""
-    st.markdown("### SHAP (SHapley Additive exPlanations)")
+    st.markdown("### SHAP")
     st.markdown("SHAP values explain individual predictions by showing each feature's contribution")
     
-    st.info("""
-     **About SHAP:**
+    # st.info("""
+    # **About SHAP:**
     
-    SHAP provides both global and local interpretability:
-    - **Global**: Overall feature impact across dataset
-    - **Local**: How features affect a single prediction
-    """)
+    #SHAP provides both global and local interpretability:
+    #- **Global**: Overall feature impact across dataset
+    #- **Local**: How features affect a single prediction
+    #""")
     
     analysis_type = st.radio(
         "Choose analysis type:",
-        ["Global SHAP Summary", "Local Explanation (Single Prediction)"],
+        ["Model SHAP", "Local (Upload / Manual Entry)"],
         horizontal=True
     )
     
-    if analysis_type == "Global SHAP Summary":
+    if analysis_type == "Model SHAP":
         global_shap(model)
     else:
         local_shap(model)
 
 def global_shap(model):
     """Global SHAP summary plot"""
-    st.markdown("#### Global SHAP Summary")
+    st.markdown("#### SHAP Analysis")
     
     # Automatically load appropriate test data based on model type
     model_type = None
@@ -147,7 +161,7 @@ def global_shap(model):
     if test_data_path and Path(test_data_path).exists():
         try:
             df = pd.read_csv(test_data_path)
-            st.success(f"Loaded {model_type} test data: {test_data_path}")
+            st.success(f"Loaded test data: {test_data_path}")
         except Exception as e:
             st.error(f"Error loading test data: {e}")
     
@@ -168,7 +182,7 @@ def global_shap(model):
     else:
         df_sample = df
     
-    if st.button("🔍 Compute SHAP Values", type="primary"):
+    if st.button("Plot SHAP Values", type="primary"):
         try:
             import shap
             
@@ -185,37 +199,51 @@ def global_shap(model):
                 # Handle ensemble model - need to generate meta-features
                 if hasattr(model, 'meta_model'):
                     # For ensemble, we need the meta-features (predictions from base models)
-                    # The ensemble wrapper's predict method generates these
-                    st.info("📊 Generating meta-features for ensemble model...")
+                    # st.info("Generating meta-features for ensemble model...")
                     
-                    # Get meta-features using the wrapper's method
-                    if hasattr(model, '_prepare_meta_features'):
-                        X_meta = model._prepare_meta_features(X)
-                    else:
-                        # Fallback: manually generate if method not available
-                        st.warning("⚠️ Using base model predictions as meta-features")
-                        from apps.utils import align_features
-                        
-                        # Get predictions from traditional model
-                        X_trad = align_features(X, model.traditional_model)
-                        trad_pred = model.traditional_model.predict(X_trad)
-                        trad_proba = model.traditional_model.predict_proba(X_trad)[:, 1]
-                        
-                        # Get predictions from behavioral model
-                        X_behav = align_features(X, model.behavioral_model)
-                        behav_pred = model.behavioral_model.predict(X_behav)
-                        behav_proba = model.behavioral_model.predict_proba(X_behav)[:, 1]
-                        
-                        # Create meta-features
-                        X_meta = pd.DataFrame({
-                            'trad_pred': trad_pred,
-                            'trad_proba': trad_proba,
-                            'behav_pred': behav_pred,
-                            'behav_proba': behav_proba
-                        })
+                    # Manually generate meta-features same as ensemble predict_proba
+                    from sklearn.preprocessing import LabelEncoder
+                    from src.data_cleaning import impute_categorical_columns, impute_numeric_columns
+                    
+                    # Prepare features for each base model
+                    X_trad = X[model.traditional_features].copy()
+                    X_behav = X[model.behavioral_features].copy()
+                    
+                    # Clean data
+                    X_trad = impute_categorical_columns(X_trad, fill_value='MISSING')
+                    X_trad = impute_numeric_columns(X_trad, strategy='median')
+                    for col in X_trad.columns:
+                        if X_trad[col].dtype in ['object', 'category']:
+                            le = LabelEncoder()
+                            X_trad[col] = le.fit_transform(X_trad[col].astype(str))
+                    
+                    X_behav = impute_categorical_columns(X_behav, fill_value='MISSING')
+                    X_behav = impute_numeric_columns(X_behav, strategy='median')
+                    for col in X_behav.columns:
+                        if X_behav[col].dtype in ['object', 'category']:
+                            le = LabelEncoder()
+                            X_behav[col] = le.fit_transform(X_behav[col].astype(str))
+                    
+                    # Get base model predictions
+                    pred_trad = model.model_traditional.predict_proba(X_trad)[:, 1]
+                    pred_behav = model.model_behavioral.predict_proba(X_behav)[:, 1]
+                    
+                    # Create meta-features (7 core features only - no additional key features)
+                    X_meta = pd.DataFrame({
+                        'pred_traditional': pred_trad,
+                        'pred_behavioral': pred_behav,
+                        'pred_avg': (pred_trad + pred_behav) / 2,
+                        'pred_max': np.maximum(pred_trad, pred_behav),
+                        'pred_min': np.minimum(pred_trad, pred_behav),
+                        'pred_diff': np.abs(pred_trad - pred_behav),
+                        'pred_ratio': pred_trad / (pred_behav + 0.001)
+                    })
+                    
+                    # Note: Current CatBoost model uses only 7 meta-features (no additional key features)
                     
                     final_estimator = model.meta_model
                     X_for_shap = X_meta
+                    # st.success(f"Generated {X_meta.shape[1]} meta-features for SHAP analysis")
                     
                 # Handle regular models
                 else:
@@ -234,12 +262,12 @@ def global_shap(model):
                 shap_values = explainer.shap_values(X_for_shap)
                 
                 # Plot
-                st.success("✅ SHAP values computed successfully!")
+                # st.success("SHAP values computed successfully!")
                 
-                st.markdown("#### Feature Importance (Mean Absolute SHAP)")
-                fig, ax = plt.subplots(figsize=(10, 8))
-                shap.summary_plot(shap_values, X_for_shap, plot_type="bar", show=False)
-                st.pyplot(fig)
+               # st.markdown("#### Feature Importance (Mean Absolute SHAP)")
+               # fig, ax = plt.subplots(figsize=(10, 8))
+               # shap.summary_plot(shap_values, X_for_shap, plot_type="bar", show=False)
+                # st.pyplot(fig)
                 
                 st.markdown("---")
                 
@@ -284,7 +312,7 @@ def local_shap(model):
             
             st.dataframe(df, use_container_width=True)
             
-            if st.button("🔍 Generate SHAP Explanation", type="primary"):
+            if st.button("Generate SHAP Explanation", type="primary"):
                 generate_local_shap(model, df)
     else:
         st.info("Manual entry for local SHAP - Use the Prediction page for detailed manual input, then return here with results")
@@ -295,15 +323,59 @@ def generate_local_shap(model, X):
         import shap
         
         with st.spinner("Computing SHAP explanation..."):
-            # Get final estimator
-            if hasattr(model, 'named_steps'):
-                final_estimator = list(model.named_steps.values())[-1]
+            # Handle ensemble model differently
+            if hasattr(model, 'meta_model'):
+                # For ensemble, generate meta-features
+                from sklearn.preprocessing import LabelEncoder
+                from src.data_cleaning import impute_categorical_columns, impute_numeric_columns
+                
+                # Prepare features
+                X_trad = X[model.traditional_features].copy()
+                X_behav = X[model.behavioral_features].copy()
+                
+                # Clean data
+                X_trad = impute_categorical_columns(X_trad, fill_value='MISSING')
+                X_trad = impute_numeric_columns(X_trad, strategy='median')
+                for col in X_trad.columns:
+                    if X_trad[col].dtype in ['object', 'category']:
+                        le = LabelEncoder()
+                        X_trad[col] = le.fit_transform(X_trad[col].astype(str))
+                
+                X_behav = impute_categorical_columns(X_behav, fill_value='MISSING')
+                X_behav = impute_numeric_columns(X_behav, strategy='median')
+                for col in X_behav.columns:
+                    if X_behav[col].dtype in ['object', 'category']:
+                        le = LabelEncoder()
+                        X_behav[col] = le.fit_transform(X_behav[col].astype(str))
+                
+                # Get predictions
+                pred_trad = model.model_traditional.predict_proba(X_trad)[:, 1]
+                pred_behav = model.model_behavioral.predict_proba(X_behav)[:, 1]
+                
+                # Create meta-features (7 core features only)
+                X_aligned = pd.DataFrame({
+                    'pred_traditional': pred_trad,
+                    'pred_behavioral': pred_behav,
+                    'pred_avg': (pred_trad + pred_behav) / 2,
+                    'pred_max': np.maximum(pred_trad, pred_behav),
+                    'pred_min': np.minimum(pred_trad, pred_behav),
+                    'pred_diff': np.abs(pred_trad - pred_behav),
+                    'pred_ratio': pred_trad / (pred_behav + 0.001)
+                })
+                
+                # Note: Current CatBoost model uses only 7 meta-features
+                
+                final_estimator = model.meta_model
             else:
-                final_estimator = model
-            
-            # Align features
-            from apps.utils import align_features
-            X_aligned = align_features(X, model)
+                # Get final estimator from pipeline
+                if hasattr(model, 'named_steps'):
+                    final_estimator = list(model.named_steps.values())[-1]
+                else:
+                    final_estimator = model
+                
+                # Align features
+                from apps.utils import align_features
+                X_aligned = align_features(X, model)
             
             # Prediction
             pred, prob = get_predictions(model, X)
