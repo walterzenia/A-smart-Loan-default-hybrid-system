@@ -63,18 +63,21 @@ def global_importance(model):
     st.markdown("### Feature Importance")
     st.markdown("Shows which features have the most impact on predictions across all samples")
     
-    # Show info about ensemble meta-features
+    # Show info about ensemble features
     if hasattr(model, 'meta_model'):
         meta_model = model.meta_model
-        if hasattr(meta_model, 'feature_names_'):
-            num_features = len(meta_model.feature_names_)
-            st.markdown(f"""
-            **Ensemble Model Meta-Features:** This model uses {num_features} meta-features generated from the base models' predictions:
-            - Core predictions (pred_traditional, pred_behavioral)
-            - Derived features (pred_avg, pred_max, pred_min, pred_diff, pred_ratio)
-            
-            These meta-features capture the agreement/disagreement patterns between base models.
-            """)
+        trad_count = len(model.traditional_features) if hasattr(model, 'traditional_features') else 0
+        behav_count = len(model.behavioral_features) if hasattr(model, 'behavioral_features') else 0
+        total_count = trad_count + behav_count + 7  # 7 meta-features
+        
+        st.info(f"""
+        **Ensemble Model Features:** This model uses all {total_count} combined features:
+        - Traditional features: {trad_count}
+        - Behavioral features: {behav_count}
+        - Meta-features (predictions from base models): 7
+        
+        The meta-learner (CatBoost) learns from the complete feature set of both models.
+        """)
     
     top_n = st.slider("Number of top features to display", 10, 50, 20)
     
@@ -196,12 +199,8 @@ def global_shap(model):
                     if col in X.columns:
                         X = X.drop(col, axis=1)
                 
-                # Handle ensemble model - need to generate meta-features
+                # Handle ensemble model - use 538 features (7 meta + 531 raw)
                 if hasattr(model, 'meta_model'):
-                    # For ensemble, we need the meta-features (predictions from base models)
-                    # st.info("Generating meta-features for ensemble model...")
-                    
-                    # Manually generate meta-features same as ensemble predict_proba
                     from sklearn.preprocessing import LabelEncoder
                     from src.data_cleaning import impute_categorical_columns, impute_numeric_columns
                     
@@ -224,12 +223,11 @@ def global_shap(model):
                             le = LabelEncoder()
                             X_behav[col] = le.fit_transform(X_behav[col].astype(str))
                     
-                    # Get base model predictions
+                    # Generate meta-features from base model predictions
                     pred_trad = model.model_traditional.predict_proba(X_trad)[:, 1]
                     pred_behav = model.model_behavioral.predict_proba(X_behav)[:, 1]
                     
-                    # Create meta-features (7 core features only - no additional key features)
-                    X_meta = pd.DataFrame({
+                    meta_features = pd.DataFrame({
                         'pred_traditional': pred_trad,
                         'pred_behavioral': pred_behav,
                         'pred_avg': (pred_trad + pred_behav) / 2,
@@ -239,11 +237,22 @@ def global_shap(model):
                         'pred_ratio': pred_trad / (pred_behav + 0.001)
                     })
                     
-                    # Note: Current CatBoost model uses only 7 meta-features (no additional key features)
+                    # Reset indices for proper concatenation
+                    meta_features.reset_index(drop=True, inplace=True)
+                    X_trad.reset_index(drop=True, inplace=True)
+                    X_behav.reset_index(drop=True, inplace=True)
+                    
+                    # Combine with ORIGINAL feature names for CatBoost compatibility
+                    X_for_shap = pd.concat([meta_features, X_trad, X_behav], axis=1)
+                    
+                    # Create feature name mapping with prefixes for display
+                    feature_names_display = (
+                        list(meta_features.columns) + 
+                        [f'trad_{col}' for col in X_trad.columns] + 
+                        [f'behav_{col}' for col in X_behav.columns]
+                    )
                     
                     final_estimator = model.meta_model
-                    X_for_shap = X_meta
-                    # st.success(f"Generated {X_meta.shape[1]} meta-features for SHAP analysis")
                     
                 # Handle regular models
                 else:
@@ -256,17 +265,25 @@ def global_shap(model):
                     # Align features
                     from apps.utils import align_features
                     X_for_shap = align_features(X, model)
+                    feature_names_display = None
                 
                 # Compute SHAP
                 explainer = shap.TreeExplainer(final_estimator)
                 shap_values = explainer.shap_values(X_for_shap)
+                
+                # Create a copy with renamed columns for display
+                if hasattr(model, 'meta_model') and feature_names_display:
+                    X_for_display = X_for_shap.copy()
+                    X_for_display.columns = feature_names_display
+                else:
+                    X_for_display = X_for_shap
                 
                 # Plot
                 # st.success("SHAP values computed successfully!")
                 
                # st.markdown("#### Feature Importance (Mean Absolute SHAP)")
                # fig, ax = plt.subplots(figsize=(10, 8))
-               # shap.summary_plot(shap_values, X_for_shap, plot_type="bar", show=False)
+               # shap.summary_plot(shap_values, X_for_display, plot_type="bar", show=False)
                 # st.pyplot(fig)
                 
                 st.markdown("---")
@@ -274,7 +291,7 @@ def global_shap(model):
                 # Detailed summary
                 st.markdown("#### SHAP Summary Plot (Feature Impact)")
                 fig2, ax2 = plt.subplots(figsize=(10, 8))
-                shap.summary_plot(shap_values, X_for_shap, show=False)
+                shap.summary_plot(shap_values, X_for_display, show=False)
                 st.pyplot(fig2)
                 
                 st.markdown("""
@@ -325,7 +342,7 @@ def generate_local_shap(model, X):
         with st.spinner("Computing SHAP explanation..."):
             # Handle ensemble model differently
             if hasattr(model, 'meta_model'):
-                # For ensemble, generate meta-features
+                # For ensemble, generate 538 features (7 meta + 531 raw)
                 from sklearn.preprocessing import LabelEncoder
                 from src.data_cleaning import impute_categorical_columns, impute_numeric_columns
                 
@@ -348,12 +365,11 @@ def generate_local_shap(model, X):
                         le = LabelEncoder()
                         X_behav[col] = le.fit_transform(X_behav[col].astype(str))
                 
-                # Get predictions
+                # Generate meta-features from base model predictions
                 pred_trad = model.model_traditional.predict_proba(X_trad)[:, 1]
                 pred_behav = model.model_behavioral.predict_proba(X_behav)[:, 1]
                 
-                # Create meta-features (7 core features only)
-                X_aligned = pd.DataFrame({
+                meta_features = pd.DataFrame({
                     'pred_traditional': pred_trad,
                     'pred_behavioral': pred_behav,
                     'pred_avg': (pred_trad + pred_behav) / 2,
@@ -363,7 +379,20 @@ def generate_local_shap(model, X):
                     'pred_ratio': pred_trad / (pred_behav + 0.001)
                 })
                 
-                # Note: Current CatBoost model uses only 7 meta-features
+                # Reset indices for proper concatenation
+                meta_features.reset_index(drop=True, inplace=True)
+                X_trad.reset_index(drop=True, inplace=True)
+                X_behav.reset_index(drop=True, inplace=True)
+                
+                # Combine with ORIGINAL feature names for CatBoost compatibility
+                X_aligned = pd.concat([meta_features, X_trad, X_behav], axis=1)
+                
+                # Create feature name mapping with prefixes for display
+                feature_names_display = (
+                    list(meta_features.columns) + 
+                    [f'trad_{col}' for col in X_trad.columns] + 
+                    [f'behav_{col}' for col in X_behav.columns]
+                )
                 
                 final_estimator = model.meta_model
             else:
@@ -376,6 +405,7 @@ def generate_local_shap(model, X):
                 # Align features
                 from apps.utils import align_features
                 X_aligned = align_features(X, model)
+                feature_names_display = None
             
             # Prediction
             pred, prob = get_predictions(model, X)
@@ -391,6 +421,13 @@ def generate_local_shap(model, X):
             explainer = shap.TreeExplainer(final_estimator)
             shap_values = explainer.shap_values(X_aligned)
             
+            # Create a copy with renamed columns for display
+            if hasattr(model, 'meta_model') and feature_names_display:
+                X_for_display = X_aligned.copy()
+                X_for_display.columns = feature_names_display
+            else:
+                X_for_display = X_aligned
+            
             st.markdown("### Feature Contributions")
             
             # Waterfall plot
@@ -399,8 +436,8 @@ def generate_local_shap(model, X):
             shap.waterfall_plot(shap.Explanation(
                 values=shap_values[0],
                 base_values=explainer.expected_value,
-                data=X_aligned.iloc[0],
-                feature_names=X_aligned.columns.tolist()
+                data=X_for_display.iloc[0],
+                feature_names=X_for_display.columns.tolist()
             ), show=False)
             st.pyplot(fig)
             

@@ -2,29 +2,27 @@
 Train CatBoost Ensemble Model for Loan Default Prediction
 ===========================================================
 
-This script trains a CatBoost meta-learner that combines predictions from:
+This script trains a CatBoost meta-learner that combines ALL features from:
 1. Traditional Model (LightGBM, 487 features)
 2. Behavioral Model (LightGBM, 44 features)
 
-CatBoost Advantages over LightGBM:
+Combined Features Approach (531 total):
+- Uses all 487 traditional features + 44 behavioral features
+- CatBoost learns directly from the complete feature space
+- Captures complex interactions between both feature sets
+
+CatBoost Advantages:
 - Better handling of class imbalance (auto_class_weights='Balanced')
-- Improved recall: 88.89% vs 48%
-- Robust to overfitting
+- Robust to overfitting with combined feature set
 - Native categorical feature support
+- Automatic feature importance ranking
 
-Meta-Features (7 total):
-- pred_traditional: Traditional model probability
-- pred_behavioral: Behavioral model probability
-- pred_avg: Average of both predictions
-- pred_max: Maximum prediction (pessimistic view)
-- pred_min: Minimum prediction (optimistic view)
-- pred_diff: Difference between predictions (agreement indicator)
-- pred_ratio: Ratio of predictions (relative confidence)
-
-Results:
-- AUC: 0.8509
-- Recall @ 0.32 threshold: 88.89% (240/270 defaults caught)
-- Test Set: 3,468 samples (270 defaults, 7.79% default rate)
+Training Configuration:
+- Input: 531 combined features (487 traditional + 44 behavioral)
+- Algorithm: CatBoost Classifier
+- Class Balancing: Automatic balanced weights
+- Early Stopping: 50 rounds
+- Max Iterations: 1000
 """
 
 import pandas as pd
@@ -109,9 +107,9 @@ def prepare_feature_sets(df, model_traditional, model_behavioral):
     return traditional_features, behavioral_features
 
 
-def create_meta_features(df, model_traditional, model_behavioral, 
+def create_combined_features(df, model_traditional, model_behavioral, 
                          traditional_features, behavioral_features):
-    """Generate meta-features from base model predictions"""
+    """Combine all traditional and behavioral features for CatBoost training"""
     
     # Prepare data for each model
     X_trad = df[traditional_features].copy()
@@ -121,30 +119,18 @@ def create_meta_features(df, model_traditional, model_behavioral,
     X_trad = prepare_prediction_data(X_trad, model_traditional)
     X_behav = prepare_prediction_data(X_behav, model_behavioral)
     
-    # Generate predictions
-    pred_trad = model_traditional.predict_proba(X_trad)[:, 1]
-    pred_behav = model_behavioral.predict_proba(X_behav)[:, 1]
-    
-    # Create 7 meta-features
-    meta_features = pd.DataFrame({
-        'pred_traditional': pred_trad,
-        'pred_behavioral': pred_behav,
-        'pred_avg': (pred_trad + pred_behav) / 2,
-        'pred_max': np.maximum(pred_trad, pred_behav),
-        'pred_min': np.minimum(pred_trad, pred_behav),
-        'pred_diff': np.abs(pred_trad - pred_behav),
-        'pred_ratio': np.where(pred_behav > 0, pred_trad / pred_behav, 0)
-    })
+    # Combine all features (531 total: 487 + 44)
+    combined_features = pd.concat([X_trad, X_behav], axis=1)
     
     print(f"\n{'='*70}")
-    print(f"META-FEATURES CREATED")
+    print(f"COMBINED FEATURES CREATED")
     print(f"{'='*70}")
-    print(f"Total meta-features: {meta_features.shape[1]}")
-    print(f"Samples: {meta_features.shape[0]:,}")
-    print(f"\nMeta-feature statistics:")
-    print(meta_features.describe())
+    print(f"Traditional features: {X_trad.shape[1]}")
+    print(f"Behavioral features:  {X_behav.shape[1]}")
+    print(f"Total combined:       {combined_features.shape[1]}")
+    print(f"Samples:              {combined_features.shape[0]:,}")
     
-    return meta_features
+    return combined_features
 
 
 def train_catboost_meta_learner(X_train, y_train, X_val, y_val):
@@ -316,28 +302,28 @@ def main():
     # 3. Prepare feature sets
     trad_features, behav_features = prepare_feature_sets(train_df, model_trad, model_behav)
     
-    # 4. Create meta-features for training
-    X_train_meta = create_meta_features(train_df, model_trad, model_behav, 
+    # 4. Create combined features for training (531 total: 487 + 44)
+    X_train_combined = create_combined_features(train_df, model_trad, model_behav, 
                                         trad_features, behav_features)
     y_train = train_df['TARGET']
     
     # 5. Split training into train/validation
     X_train, X_val, y_train_split, y_val = train_test_split(
-        X_train_meta, y_train, test_size=0.2, random_state=42, stratify=y_train
+        X_train_combined, y_train, test_size=0.2, random_state=42, stratify=y_train
     )
     
     print(f"\nSplit: Train={len(X_train):,}, Val={len(X_val):,}")
     
-    # 6. Train CatBoost meta-learner
+    # 6. Train CatBoost meta-learner with all 531 features
     catboost_model = train_catboost_meta_learner(X_train, y_train_split, X_val, y_val)
     
-    # 7. Create meta-features for test set
-    X_test_meta = create_meta_features(test_df, model_trad, model_behav,
+    # 7. Create combined features for test set
+    X_test_combined = create_combined_features(test_df, model_trad, model_behav,
                                        trad_features, behav_features)
     y_test = test_df['TARGET']
     
     # 8. Evaluate at default threshold (0.5)
-    auc_test, y_proba_test = evaluate_model(catboost_model, X_test_meta, y_test, threshold=0.5)
+    auc_test, y_proba_test = evaluate_model(catboost_model, X_test_combined, y_test, threshold=0.5)
     
     # 9. Find optimal threshold for high recall
     optimal_threshold = find_optimal_threshold(y_test, y_proba_test, target_recall=0.85)
@@ -346,7 +332,7 @@ def main():
     print(f"\n{'='*70}")
     print(f"FINAL EVALUATION @ OPTIMAL THRESHOLD")
     print(f"{'='*70}")
-    evaluate_model(catboost_model, X_test_meta, y_test, threshold=optimal_threshold)
+    evaluate_model(catboost_model, X_test_combined, y_test, threshold=optimal_threshold)
     
     # 11. Save model
     save_model(catboost_model, model_trad, model_behav, trad_features, behav_features,

@@ -1,16 +1,20 @@
 # Loan Default Prediction System - User Guide
 
-> **Last Updated:** December 5, 2025  
-> **Version:** 2.3.0  
-> **Latest Update:** Statistical validation analysis with interactive visualizations
+> **Last Updated:** December 9, 2025  
+> **Version:** 2.4.0  
+> **Latest Update:** 538-feature hybrid architecture with enhanced interpretability
 
 ## Recent Enhancements
 
+- ✅ **538-Feature Hybrid Architecture**: 7 meta-features + 487 traditional + 44 behavioral features
+- ✅ **Performance Improvement**: Test AUC 0.8590 (up from 0.8158), Accuracy 81%, Recall 77%
+- ✅ **Feature Name Prefixes**: `pred_*` (meta), `trad_*` (traditional), `behav_*` (behavioral) for interpretability
+- ✅ **Enhanced SHAP Visualizations**: Shows feature sources in all importance plots
 - ✅ **Statistical Validation Notebook** (`Chapter4_Statistical_Analysis.ipynb`): Comprehensive McNemar's, DeLong's, and Bootstrap CI tests
-- ✅ **CatBoost Ensemble Upgrade**: 88.89% recall (up from 48%), AUC 0.8509
+- ✅ **CatBoost Ensemble Upgrade**: 77% recall, AUC 0.8590
 - ✅ **Interactive Plotly Visualizations**: Precision-Recall and ROC curves with hover tooltips
 - ✅ **Centralized Data Cleaning**: Single module (`src/data_cleaning.py`) for consistent preprocessing
-- ✅ **All Performance Claims Validated**: Statistical significance p<0.001
+- ✅ **Cache Auto-Invalidation**: Dashboard updates automatically when models retrained
 
 ## Table of Contents
 
@@ -106,14 +110,17 @@ Choose from three available models:
 **Ensemble Hybrid Model (CatBoost)** _Recommended_
 
 - Best for: Maximum accuracy and default detection
-- Input: 7 meta-features from both base models
+- Input: **538 features total** (7 meta-features + 487 traditional + 44 behavioral)
 - Use when: You have data for both feature sets
 - Advantages:
-  - **88.89% recall** - catches 240 out of 270 defaults
-  - **AUC 0.8509** - statistically validated as superior (p<0.001)
-  - Optimal threshold 0.32 (adjustable based on risk tolerance)
-  - Meta-learner trained on: pred_traditional, pred_behavioral, pred_avg, pred_max, pred_min, pred_diff, pred_ratio
-- Technical: CatBoost with auto class balancing, 146 iterations early stopping
+  - **77% recall** - catches 207 out of 270 defaults in test set
+  - **81% accuracy** - strong overall performance
+  - **AUC 0.8590** - excellent discrimination ability (+5.3% improvement)
+  - Optimal threshold 0.5 (adjustable based on risk tolerance)
+  - **Meta-features**: pred_traditional, pred_behavioral, pred_avg, pred_max, pred_min, pred_diff, pred_ratio
+  - **Raw features preserved**: All 487 traditional + 44 behavioral features included alongside meta-features
+  - **Feature prefixes**: Shows source of each feature (pred*\*, trad*_, behav\__)
+- Technical: CatBoost with auto class balancing, early stopping at iteration 68
 
 #### Step 2: Choose Input Method
 

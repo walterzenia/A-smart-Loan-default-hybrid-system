@@ -30,12 +30,22 @@ sys.path.append(str(Path(__file__).parent.parent / "src"))
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (10, 6)
 
-@st.cache_resource
 def load_model(model_path):
     """Load a trained model from disk."""
     if not os.path.exists(model_path):
         st.error(f"Model not found at {model_path}")
         return None
+    try:
+        # Use file modification time to bust cache when model is retrained
+        mtime = os.path.getmtime(model_path)
+        return _load_model_cached(model_path, mtime)
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
+        return None
+
+@st.cache_resource
+def _load_model_cached(model_path, _mtime):
+    """Internal cached model loader."""
     try:
         model = joblib.load(model_path)
         return model
@@ -239,13 +249,24 @@ def plot_feature_importance(model, top_n=20):
             elif hasattr(meta_model, 'get_feature_importance'):
                 # CatBoost
                 importances = meta_model.get_feature_importance()
-                if hasattr(meta_model, 'feature_names_'):
-                    feature_names = meta_model.feature_names_
+                # For ensemble model, add prefixes to distinguish feature sources
+                if hasattr(model, 'traditional_features') and hasattr(model, 'behavioral_features'):
+                    trad_feats = model.traditional_features
+                    behav_feats = model.behavioral_features
+                    # 7 meta-features + prefixed raw features
+                    meta_names = ['pred_traditional', 'pred_behavioral', 'pred_avg', 'pred_max', 'pred_min', 'pred_diff', 'pred_ratio']
+                    feature_names = meta_names + [f'trad_{feat}' for feat in trad_feats] + [f'behav_{feat}' for feat in behav_feats]
+                elif hasattr(meta_model, 'feature_names_'):
+                    feature_names = list(meta_model.feature_names_)
                 else:
-                    feature_names = [f'Meta-Feature {i}' for i in range(len(importances))]
+                    feature_names = [f'feature_{i}' for i in range(len(importances))]
             elif hasattr(meta_model, 'feature_importances_'):
                 importances = meta_model.feature_importances_
-                feature_names = [f'Meta-Feature {i}' for i in range(len(importances))]
+                # Ensemble uses combined traditional + behavioral features
+                trad_feats = model.traditional_features if hasattr(model, 'traditional_features') else []
+                behav_feats = model.behavioral_features if hasattr(model, 'behavioral_features') else []
+                # Add prefixes to distinguish feature sources
+                feature_names = [f'trad_{feat}' for feat in trad_feats] + [f'behav_{feat}' for feat in behav_feats]
             else:
                 return None
         # Handle pipeline models

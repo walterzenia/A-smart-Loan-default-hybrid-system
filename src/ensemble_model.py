@@ -1,6 +1,17 @@
 """
-Ensemble Hybrid Model Class
-Wrapper for combining traditional and behavioral models
+Ensemble Hybrid Model Class - 538-Feature Architecture
+Wrapper for combining traditional and behavioral models with meta-feature generation
+
+Architecture:
+- Base Models: Traditional (487 features) + Behavioral (44 features)
+- Meta-Features: 7 engineered features from base model predictions
+- Combined: 7 meta + 487 traditional + 44 behavioral = 538 total features
+- Meta-Learner: CatBoost with auto class balancing
+
+Performance:
+- Test AUC: 0.8590
+- Accuracy: 81%
+- Recall: 77%
 """
 import warnings
 import pandas as pd
@@ -12,7 +23,12 @@ warnings.filterwarnings('ignore', message='.*number of features.*')
 warnings.filterwarnings('ignore', message='.*predict_disable_shape_check.*')
 
 class EnsembleHybridModel:
-    """Wrapper class for easy ensemble prediction"""
+    """
+    Wrapper class for 538-feature ensemble prediction
+    
+    Generates meta-features from base model predictions and combines with raw features
+    for comprehensive risk assessment using CatBoost meta-learner.
+    """
     def __init__(self, meta_model, model_trad, model_behav, trad_feats, behav_feats):
         self.meta_model = meta_model
         self.model_traditional = model_trad
@@ -60,23 +76,12 @@ class EnsembleHybridModel:
                 le = LabelEncoder()
                 X_behav[col] = le.fit_transform(X_behav[col].astype(str))
         
-        # Get base model predictions
-        try:
-            pred_trad = self.model_traditional.predict_proba(X_trad)[:, 1]
-        except Exception as e:
-            import warnings
-            warnings.warn(f"Traditional model prediction failed: {str(e)[:200]}")
-            pred_trad = np.zeros(len(X))
+        # Get base model predictions (7 meta-features)
+        pred_trad = self.model_traditional.predict_proba(X_trad)[:, 1]
+        pred_behav = self.model_behavioral.predict_proba(X_behav)[:, 1]
         
-        try:
-            pred_behav = self.model_behavioral.predict_proba(X_behav)[:, 1]
-        except Exception as e:
-            import warnings
-            warnings.warn(f"Behavioral model prediction failed: {str(e)[:200]}")
-            pred_behav = np.zeros(len(X))
-        
-        # Create meta-features
-        meta_X = pd.DataFrame({
+        # Create 7 meta-features from predictions
+        meta_features = pd.DataFrame({
             'pred_traditional': pred_trad,
             'pred_behavioral': pred_behav,
             'pred_avg': (pred_trad + pred_behav) / 2,
@@ -86,14 +91,8 @@ class EnsembleHybridModel:
             'pred_ratio': pred_trad / (pred_behav + 0.001)
         })
         
-        # Add key features from both models (same as training)
-        for feat in self.key_traditional:
-            if feat in X_trad.columns:
-                meta_X[f'trad_{feat}'] = X_trad[feat].values
-        
-        for feat in self.key_behavioral:
-            if feat in X_behav.columns:
-                meta_X[f'behav_{feat}'] = X_behav[feat].values
+        # Combine: 7 meta-features + 531 raw features = 538 total features
+        meta_X = pd.concat([meta_features, X_trad, X_behav], axis=1)
         
         # Get final prediction from meta-model
         # Handle both LightGBM (best_iteration) and CatBoost (best_iteration_)
