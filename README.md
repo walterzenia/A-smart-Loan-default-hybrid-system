@@ -29,7 +29,7 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 
 **Major Enhancement: 538-Feature Hybrid Architecture with Feature Interpretability**
 
-- ✅ **Upgraded to 538-Feature Architecture**: Combines 7 meta-features + 487 traditional + 44 behavioral
+- ✅ **Upgraded to 538-Feature Architecture**: Combines 7 meta-features + 487 traditional + 44 behavioral features
 - ✅ **Significant Performance Improvement**: Test AUC increased from 0.8158 to **0.8590** (+5.3%)
 - ✅ **Enhanced Recall**: 77% recall (up from previous iterations), catches more defaults
 - ✅ **Accuracy Boost**: 81% accuracy (up from 75%), better overall predictions
