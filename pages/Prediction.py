@@ -75,7 +75,7 @@ def show():
     
     if model_type == 'ensemble':
         st.markdown("---")
-        st.subheader("⚖️ Fairness Settings")
+        st.subheader("Fairness Settings")
         
         from apps.utils import load_fair_ensemble_model
         fair_model = load_fair_ensemble_model()
@@ -94,10 +94,10 @@ def show():
 - MARRIAGE: 97.8% disparate impact (PASS)
 - AGE_GROUP: 94.5% disparate impact (PASS)
 
-⚠️ Note: Recall is lower (16.7% vs 77.8%) but precision is higher (64.3% vs 24.7%)
+ Note: Recall is lower (16.7% vs 77.8%) but precision is higher (64.3% vs 24.7%)
 """)
         else:
-            st.warning("⚠️ Fair model not available. Run the Ensemble_Fairness_Mitigation notebook to create it.")
+            st.warning(" Fair model not available. Run the Ensemble_Fairness_Mitigation notebook to create it.")
     
     st.markdown("---")
     
@@ -146,37 +146,27 @@ def batch_prediction(model, model_name, use_fair_model=False, fair_model=None):
                 if use_fair_model and fair_model is not None and model_type == 'ensemble':
                     from apps.utils import extract_protected_attributes
                     
-                    # Get baseline predictions first
-                    predictions_baseline, probabilities = get_predictions(model, df)
-                    
-                    if predictions_baseline is None:
-                        st.error("❌ Prediction failed. Please check your data format.")
-                        return
-                    
                     # Extract protected attributes
                     protected_attrs = extract_protected_attributes(df)
                     
-                    # Get fair predictions - use AGE_GROUP by default (best performer)
-                    if 'AGE_GROUP' in protected_attrs and 'AGE_GROUP' in fair_model.fair_models:
-                        predictions = fair_model.fair_models['AGE_GROUP'].predict(
-                            df, 
-                            sensitive_features=protected_attrs['AGE_GROUP']
-                        )
-                        st.success("✅ Fairness-aware predictions generated using AGE_GROUP optimization")
-                    else:
-                        predictions = predictions_baseline
-                        st.warning("⚠️ Could not apply fairness optimization - using baseline predictions")
+                    # Get fair predictions using the fair ensemble model
+                    fair_preds = fair_model.predict_fair(df, protected_attrs, use_fairness=True)
+                    # Use AGE_GROUP predictions (or any available attribute)
+                    predictions = fair_preds.get('AGE_GROUP', fair_preds.get('SEX', fair_preds.get('MARRIAGE')))
+                    probabilities = fair_model.predict_proba(df)[:, 1]
+                    
+                    st.success("✓ Fairness-aware predictions generated using threshold-optimized model")
                 else:
                     predictions, probabilities = get_predictions(model, df)
                 
                 if predictions is None:
-                    st.error("❌ Prediction failed. Please check your data format.")
+                    st.error("rediction failed. Please check your data format.")
                     if model_type == 'ensemble':
-                        st.warning("⚠️ Ensemble model requires both traditional and behavioral features. Upload a hybrid dataset.")
+                        st.warning("Ensemble model requires both traditional and behavioral features. Upload a hybrid dataset.")
                     elif model_type == 'traditional':
-                        st.warning("⚠️ Traditional model requires Home Credit features (EXT_SOURCE, AMT_CREDIT, etc.).")
+                        st.warning(" Traditional model requires Home Credit features (EXT_SOURCE, AMT_CREDIT, etc.).")
                     elif model_type == 'behavioral':
-                        st.warning("⚠️ Behavioral model requires UCI features (PAY_*, BILL_AMT*, PAY_AMT*, etc.).")
+                        st.warning(" Behavioral model requires UCI features (PAY_*, BILL_AMT*, PAY_AMT*, etc.).")
                     return
                 
                 # Create results dataframe
@@ -289,7 +279,20 @@ def manual_prediction(model, model_name, use_fair_model=False, fair_model=None):
             print(f"[PREDICTION] Input data shape: {input_data.shape}")
             print(f"[PREDICTION] Input features: {list(input_data.columns)[:10]}...")
             
-            predictions, probabilities = get_predictions(model, input_data)
+            # Use fair model if enabled and available
+            if use_fair_model and fair_model is not None and model_type == 'ensemble':
+                from apps.utils import extract_protected_attributes
+                
+                # Extract protected attributes
+                protected_attrs = extract_protected_attributes(input_data)
+                
+                # Get fair predictions using the fair ensemble model
+                fair_preds = fair_model.predict_fair(input_data, protected_attrs, use_fairness=True)
+                # Use AGE_GROUP predictions (or any available attribute)
+                predictions = fair_preds.get('AGE_GROUP', fair_preds.get('SEX', fair_preds.get('MARRIAGE')))
+                probabilities = fair_model.predict_proba(input_data)[:, 1]
+            else:
+                predictions, probabilities = get_predictions(model, input_data)
             
             if predictions is None:
                 st.error(" Prediction failed due to missing features.")
@@ -320,7 +323,7 @@ def traditional_input_form():
     with st.form("traditional_form"):
         st.markdown("####  Traditional Model Features")
         st.warning("""
-        ⚠️ **Important Limitation:**  
+        **Important Limitation:**  
         The traditional model was trained on **487 features** from **7 Home Credit datasets** (applications, bureau, 
         bureau_balance, previous_application, POS_CASH_balance, installments_payments, credit_card_balance). 
         This manual form only provides **11 simplified fields** for quick testing.
@@ -431,7 +434,7 @@ def behavioral_input_form():
         pay_amt5 = pay_amt3 * 0.90
         pay_amt6 = pay_amt3 * 0.85
 
-        submitted = st.form_submit_button("🔮 Predict Default Risk", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("Predict Default Risk", type="primary", use_container_width=True)
 
     if submitted:
         # Map categorical values
@@ -488,7 +491,7 @@ def hybrid_input_form():
     with st.form("hybrid_form"):
         st.markdown("#### Ensemble Model Features")
         st.error("""
-        ⚠️ **Critical Limitation:**  
+         **Critical Limitation:**  
         The ensemble model requires **487 traditional features** + **44 behavioral features** (531 total).  
         This manual form can only provide **~24 traditional + 44 behavioral features** (~68 total).
         
