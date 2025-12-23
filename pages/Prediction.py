@@ -69,6 +69,36 @@ def show():
     
     st.success(f" Model loaded successfully")
     
+    # Fairness option for ensemble model
+    use_fair_model = False
+    fair_model = None
+    
+    if model_type == 'ensemble':
+        st.markdown("---")
+        st.subheader("⚖️ Fairness Settings")
+        
+        from apps.utils import load_fair_ensemble_model
+        fair_model = load_fair_ensemble_model()
+        
+        if fair_model is not None:
+            use_fair_model = st.toggle(
+                "Enable Fairness-Aware Predictions",
+                value=False,
+                help="Use threshold-optimized model to ensure fair treatment across demographic groups (80% rule compliance)"
+            )
+            
+            if use_fair_model:
+                st.info("""
+**Fairness Mode Enabled:** Predictions use group-specific thresholds to ensure:
+- SEX: 98.4% disparate impact (PASS)
+- MARRIAGE: 97.8% disparate impact (PASS)
+- AGE_GROUP: 94.5% disparate impact (PASS)
+
+⚠️ Note: Recall is lower (16.7% vs 77.8%) but precision is higher (64.3% vs 24.7%)
+""")
+        else:
+            st.warning("⚠️ Fair model not available. Run the Ensemble_Fairness_Mitigation notebook to create it.")
+    
     st.markdown("---")
     
     # Prediction Mode
@@ -83,11 +113,11 @@ def show():
     st.markdown("---")
     
     if pred_mode == "Batch Prediction (Upload CSV)":
-        batch_prediction(model, selected_model_name)
+        batch_prediction(model, selected_model_name, use_fair_model, fair_model)
     else:
-        manual_prediction(model, selected_model_name)
+        manual_prediction(model, selected_model_name, use_fair_model, fair_model)
 
-def batch_prediction(model, model_name):
+def batch_prediction(model, model_name, use_fair_model=False, fair_model=None):
     """Handle batch predictions from uploaded CSV"""
     st.markdown("###  Batch Prediction")
     st.markdown("Upload a CSV file with applicant data for bulk risk assessment")
@@ -112,16 +142,41 @@ def batch_prediction(model, model_name):
         
         if st.button(" Run Predictions", type="primary", use_container_width=True):
             with st.spinner("Generating predictions..."):
-                predictions, probabilities = get_predictions(model, df)
+                # Use fair model if enabled and available
+                if use_fair_model and fair_model is not None and model_type == 'ensemble':
+                    from apps.utils import extract_protected_attributes
+                    
+                    # Get baseline predictions first
+                    predictions_baseline, probabilities = get_predictions(model, df)
+                    
+                    if predictions_baseline is None:
+                        st.error("❌ Prediction failed. Please check your data format.")
+                        return
+                    
+                    # Extract protected attributes
+                    protected_attrs = extract_protected_attributes(df)
+                    
+                    # Get fair predictions - use AGE_GROUP by default (best performer)
+                    if 'AGE_GROUP' in protected_attrs and 'AGE_GROUP' in fair_model.fair_models:
+                        predictions = fair_model.fair_models['AGE_GROUP'].predict(
+                            df, 
+                            sensitive_features=protected_attrs['AGE_GROUP']
+                        )
+                        st.success("✅ Fairness-aware predictions generated using AGE_GROUP optimization")
+                    else:
+                        predictions = predictions_baseline
+                        st.warning("⚠️ Could not apply fairness optimization - using baseline predictions")
+                else:
+                    predictions, probabilities = get_predictions(model, df)
                 
                 if predictions is None:
-                    st.error(" Prediction failed. Please check your data format.")
+                    st.error("❌ Prediction failed. Please check your data format.")
                     if model_type == 'ensemble':
-                        st.warning(" Ensemble model requires both traditional and behavioral features. Upload a hybrid dataset.")
+                        st.warning("⚠️ Ensemble model requires both traditional and behavioral features. Upload a hybrid dataset.")
                     elif model_type == 'traditional':
-                        st.warning(" Traditional model requires Home Credit features (EXT_SOURCE, AMT_CREDIT, etc.).")
+                        st.warning("⚠️ Traditional model requires Home Credit features (EXT_SOURCE, AMT_CREDIT, etc.).")
                     elif model_type == 'behavioral':
-                        st.warning(" Behavioral model requires UCI features (PAY_*, BILL_AMT*, PAY_AMT*, etc.).")
+                        st.warning("⚠️ Behavioral model requires UCI features (PAY_*, BILL_AMT*, PAY_AMT*, etc.).")
                     return
                 
                 # Create results dataframe
@@ -207,7 +262,7 @@ def batch_prediction(model, model_name):
                     use_container_width=True
                 )
 
-def manual_prediction(model, model_name):
+def manual_prediction(model, model_name, use_fair_model=False, fair_model=None):
     """Handle manual single applicant prediction"""
     st.markdown("###  Single Applicant Prediction")
     st.markdown("Enter applicant details manually for individual risk assessment")

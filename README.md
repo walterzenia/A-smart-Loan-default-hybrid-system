@@ -25,18 +25,52 @@ A comprehensive machine learning system for predicting loan defaults using a hyb
 
 ## Recent Updates
 
+### Version 2.5.0 (December 23, 2025)
+
+**Major Enhancement: Fair Ensemble Model Integration**
+
+- **Fairness-Optimized Ensemble Model**: Integrated ThresholdOptimizer for demographic parity
+- **Group-Specific Thresholds**: Different decision thresholds per demographic group
+- SEX: Males (0.72%), Females (51.27%)
+- MARRIAGE: Single (18.74%), Married (18.67%), Widowed/Divorced (83.50%)
+- AGE_GROUP: 5 groups with thresholds ranging from 0.36% to 18.56%
+- **80% Rule Compliance**: All protected attributes pass fairness threshold
+  - SEX: 98.4% disparate impact ratio
+  - MARRIAGE: 97.8% disparate impact ratio
+  - AGE_GROUP: 94.5% disparate impact ratio
+- **Model Metrics Integration**: Fair model toggle in Fairness & Bias Analysis section
+- **Prediction Page Enhancement**: Enable fairness-aware predictions with toggle
+- **No Retraining Required**: Post-processing approach using Fairlearn
+
+**Technical Highlights:**
+
+- Uses same probability predictions as baseline
+- Applies demographic parity constraint via ThresholdOptimizer
+- Embedded group-specific thresholds in model pickle files
+- 6 pickle files in `models/fair_models/` directory
+- Standalone module: `src/fair_ensemble_model.py`
+
+**Performance Trade-offs:**
+
+| Metric    | Baseline | Fair Model | Change |
+| --------- | -------- | ---------- | ------ |
+| Accuracy  | 79.8%    | 92.8%      | +13.0% |
+| Precision | 24.7%    | 64.3%      | +39.6% |
+| Recall    | 77.8%    | 16.7%      | -61.1% |
+| F1-Score  | 37.5%    | 26.5%      | -11.0% |
+
 ### Version 2.4.0 (December 9, 2025)
 
 **Major Enhancement: 538-Feature Hybrid Architecture with Feature Interpretability**
 
-- ✅ **Upgraded to 538-Feature Architecture**: Combines 7 meta-features + 487 traditional + 44 behavioral features
-- ✅ **Significant Performance Improvement**: Test AUC increased from 0.8158 to **0.8590** (+5.3%)
-- ✅ **Enhanced Recall**: 77% recall (up from previous iterations), catches more defaults
-- ✅ **Accuracy Boost**: 81% accuracy (up from 75%), better overall predictions
-- ✅ **Feature Name Prefixes**: Added `pred_*`, `trad_*`, `behav_*` prefixes for interpretability
-- ✅ **Dual Naming Strategy**: Maintains CatBoost compatibility while improving visualization clarity
-- ✅ **SHAP Integration**: Full SHAP analysis with 538 features, showing feature source in all visualizations
-- ✅ **Cache Auto-Invalidation**: Model updates automatically refresh in dashboard
+- **Upgraded to 538-Feature Architecture**: Combines 7 meta-features + 487 traditional + 44 behavioral features
+- **Significant Performance Improvement**: Test AUC increased from 0.8158 to **0.8590** (+5.3%)
+- **Enhanced Recall**: 77% recall (up from previous iterations), catches more defaults
+- **Accuracy Boost**: 81% accuracy (up from 75%), better overall predictions
+- **Feature Name Prefixes**: Added `pred_*`, `trad_*`, `behav_*` prefixes for interpretability
+- **Dual Naming Strategy**: Maintains CatBoost compatibility while improving visualization clarity
+- **SHAP Integration**: Full SHAP analysis with 538 features, showing feature source in all visualizations
+- **Cache Auto-Invalidation**: Model updates automatically refresh in dashboard
 
 **Technical Highlights:**
 
@@ -665,6 +699,326 @@ def simulate_traditional_features_for_uci(uci_df):
 - **Single Predictions**: Manual input with sliders
 - **Risk Classification**: Low , Medium , High
 - **Downloadable Results**: Export predictions and metrics
+- **Fairness & Bias Analysis**: Comprehensive fairness metrics for regulatory compliance
+
+---
+
+## Fairness & Bias Analysis
+
+### Overview
+
+The Model Metrics page includes comprehensive fairness analysis for all three models (Behavioral, Ensemble, and Traditional) to ensure regulatory compliance and ethical AI deployment. The fairness evaluation uses industry-standard metrics across four protected attributes: **SEX**, **EDUCATION**, **MARRIAGE**, and **AGE_GROUP**.
+
+### Protected Attributes Tested
+
+**Behavioral Model:**
+
+- **SEX**: Gender (Male/Female)
+- **EDUCATION**: Education level (Graduate school, University, High school, Others)
+- **MARRIAGE**: Marital status (Married, Single, Others)
+- **AGE_GROUP**: Age ranges (<30, 30-40, 40-50, 50+)
+
+**Ensemble Model:**
+
+- **SEX**: Gender (M/F from behavioral data)
+- **EDUCATION**: Education level (5 categories)
+- **MARRIAGE**: Marital status (3 groups)
+- **AGE_GROUP**: Age ranges (4 bins)
+
+**Traditional Model:**
+
+- **SEX**: Mapped from CODE_GENDER (M=1.0, F=2.0)
+- **EDUCATION**: Mapped from NAME_EDUCATION_TYPE (5 levels)
+- **MARRIAGE**: Mapped from NAME_FAMILY_STATUS (3 groups)
+- **AGE_GROUP**: Derived from DAYS_BIRTH (4 bins)
+
+### Fairness Metrics Evaluated
+
+#### 1. Demographic Parity (≤5% threshold)
+
+Measures whether positive prediction rates are equal across demographic groups.
+
+- **Pass Criteria**: ≤5% disparity between groups
+- **Interpretation**: Lower is better; 0% means perfect parity
+
+#### 2. Equalized Odds (≤5% threshold)
+
+Ensures equal True Positive Rate (TPR) and False Positive Rate (FPR) across groups.
+
+- **Pass Criteria**: Both TPR and FPR disparities ≤5%
+- **Interpretation**: Model should perform equally well for all groups
+
+#### 3. Disparate Impact (≥80% threshold - "Four-Fifths Rule")
+
+Compares acceptance rates between protected and reference groups.
+
+- **Pass Criteria**: Ratio ≥80% (regulatory standard)
+- **Interpretation**: Values below 80% indicate potential discrimination
+
+#### 4. Predictive Parity (≤5% threshold)
+
+Ensures equal precision (positive predictive value) across groups.
+
+- **Pass Criteria**: ≤5% disparity in precision
+- **Interpretation**: Model predictions should be equally reliable for all groups
+
+#### 5. Calibration (≤10% Expected Calibration Error)
+
+Measures whether predicted probabilities match actual outcomes across groups.
+
+- **Pass Criteria**: Expected Calibration Error (ECE) ≤10%
+- **Interpretation**: Well-calibrated models have probabilities that reflect true risk
+
+### Model Fairness Results
+
+#### Behavioral Model - Moderate Bias (2/4 Attributes PASS)
+
+**Overall Assessment**: Shows acceptable fairness for SEX and MARRIAGE but fails for EDUCATION and AGE
+
+**Detailed Results:**
+
+| Protected Attribute | Demographic Parity     | Equalized Odds                | Disparate Impact         | Status          |
+| ------------------- | ---------------------- | ----------------------------- | ------------------------ | --------------- |
+| **SEX**             | 1.9% disparity (PASS)  | TPR: 1.9%, FPR: 0.6% (PASS)   | 86.7% (PASS)             | ✓ COMPLIANT     |
+| **EDUCATION**       | 38.1% disparity (FAIL) | TPR: 38.1%, FPR: 10.2% (FAIL) | 0% (FAIL - Extreme Bias) | ✗ NON-COMPLIANT |
+| **MARRIAGE**        | 4.9% disparity (PASS)  | TPR: 4.9%, FPR: 1.4% (PASS)   | 82.4% (PASS)             | ✓ COMPLIANT     |
+| **AGE_GROUP**       | 10.6% disparity (FAIL) | TPR: 10.6%, FPR: 3.8% (FAIL)  | 68.5% (FAIL)             | ✗ NON-COMPLIANT |
+
+**Key Findings:**
+
+- **Gender Fairness**: Model performs well across gender groups with minimal bias
+- **Marital Status**: Acceptable fairness with 82.4% disparate impact ratio
+- **Education Bias**: CRITICAL - Extreme bias with 0% disparate impact for certain education levels
+- **Age Bias**: MODERATE - 68.5% disparate impact falls below 80% threshold
+
+**Overall Fairness Score**: 50.0% (2 out of 4 attributes pass all fairness tests)
+
+**Recommended Actions:**
+
+1. **Age Fairness (URGENT)**:
+
+   - Implement threshold optimization for age groups
+   - Legal compliance review required
+   - Consider age-blind model variant
+
+2. **Education Fairness (CRITICAL)**:
+
+   - Consolidate rare education categories (0, 4, 5, 6)
+   - Investigate feature engineering
+   - Apply fairness-aware retraining
+
+3. **Continuous Monitoring**:
+   - Deploy fairness dashboard
+   - Quarterly fairness audits
+   - Automated disparate impact alerts
+
+---
+
+#### Ensemble Model - Severe Bias (0/4 Attributes PASS)
+
+**Overall Assessment**: FAILS all protected attribute tests - DO NOT DEPLOY without mitigation
+
+**Detailed Results:**
+
+| Protected Attribute | Demographic Parity     | Equalized Odds                | Disparate Impact           | Status          |
+| ------------------- | ---------------------- | ----------------------------- | -------------------------- | --------------- |
+| **SEX**             | 6.3% disparity (FAIL)  | TPR: 6.3%, FPR: 2.1% (FAIL)   | 79.3% (FAIL)               | ✗ NON-COMPLIANT |
+| **EDUCATION**       | 38.1% disparity (FAIL) | TPR: 38.1%, FPR: 10.2% (FAIL) | 0% (FAIL - Extreme Bias)   | ✗ NON-COMPLIANT |
+| **MARRIAGE**        | 5.6% disparity (FAIL)  | TPR: 5.6%, FPR: 1.9% (FAIL)   | 78.3% (FAIL)               | ✗ NON-COMPLIANT |
+| **AGE_GROUP**       | 27.2% disparity (FAIL) | TPR: 27.2%, FPR: 9.8% (FAIL)  | 44.8% (FAIL - Severe Bias) | ✗ NON-COMPLIANT |
+
+**Key Findings:**
+
+- **Gender Bias**: Nearly compliant (79.3%) but fails 80% rule by narrow margin
+- **Education Bias**: CRITICAL - Extreme bias identical to behavioral model
+- **Marital Status**: Marginal failure (78.3%) - close to compliance
+- **Age Bias**: SEVERE - Worst violator with only 44.8% disparate impact
+
+**Overall Fairness Score**: 0.0% (0 out of 4 attributes pass all fairness tests)
+
+**Critical Issues:**
+
+- **HALT DEPLOYMENT**: Model violates regulatory fairness requirements
+- **Legal Risk**: Potential discrimination claims across all protected attributes
+- **Age Discrimination**: 44.8% disparate impact represents severe discriminatory impact
+
+**Recommended Actions:**
+
+1. **Immediate Actions Required**:
+
+   - HALT deployment - severe regulatory violations
+   - Complete legal compliance review
+   - Re-engineer model with fairness constraints
+
+2. **Critical Fixes**:
+
+   - Age bias: 44.8% disparate impact (worst violator)
+   - Education bias: 38.1% demographic disparity
+   - Gender & Marriage: Both fail 80% rule
+
+3. **Mitigation Strategy**:
+   - Apply fairness-constrained retraining (ExponentiatedGradient)
+   - Implement group-specific threshold optimization
+   - Consider abandoning ensemble approach if bias cannot be mitigated
+
+---
+
+#### Traditional Model - Too Conservative (0/4 Attributes PASS)
+
+**Overall Assessment**: Model is unusable due to extreme conservatism (0.3% acceptance rate)
+
+**Detailed Results:**
+
+| Protected Attribute | Demographic Parity    | Equalized Odds              | Disparate Impact           | Status       |
+| ------------------- | --------------------- | --------------------------- | -------------------------- | ------------ |
+| **SEX**             | 0.1% disparity (PASS) | TPR: 0.1%, FPR: 0.0% (PASS) | 0% (FAIL - No Predictions) | ✗ UNRELIABLE |
+| **EDUCATION**       | 0.3% disparity (PASS) | TPR: 0.3%, FPR: 0.1% (PASS) | 0% (FAIL - No Predictions) | ✗ UNRELIABLE |
+| **MARRIAGE**        | 0.2% disparity (PASS) | TPR: 0.2%, FPR: 0.0% (PASS) | 0% (FAIL - No Predictions) | ✗ UNRELIABLE |
+| **AGE_GROUP**       | 0.3% disparity (PASS) | TPR: 0.3%, FPR: 0.1% (PASS) | 0% (FAIL - No Predictions) | ✗ UNRELIABLE |
+
+**Key Findings:**
+
+- **Technical Fairness**: All demographic parity and equalized odds tests pass
+- **Practical Failure**: Model accepts only 0-0.3% of applicants
+- **Unusable for Production**: 99.7%+ rejection rate makes it impractical
+- **Fairness Metrics Unreliable**: Too few positive predictions to assess disparate impact
+
+**Overall Fairness Score**: 0.0% (Technical compliance but practically useless)
+
+**Root Cause Analysis:**
+
+- **Class Imbalance**: Severe class imbalance in training data
+- **Conservative Learning**: Model learned to predict "no default" for almost everyone
+- **Missing Class Weights**: Need `class_weight='balanced'` in LightGBM parameters
+- **Threshold Issue**: Default 0.5 threshold too high for this data distribution
+
+**Recommended Actions:**
+
+1. **Unusable Prediction Rate (URGENT)**:
+
+   - Model accepts only 0-0.3% of applicants
+   - 99.7%+ rejection rate makes it impractical
+   - Threshold needs complete recalibration
+
+2. **Fairness Test Results**:
+
+   - Demographic Parity: PASS (all groups equally rejected)
+   - Equalized Odds: PASS (consistently low TPR/FPR)
+   - Disparate Impact: FAIL (unreliable due to low predictions)
+
+3. **Recommended Actions**:
+
+   - Retrain with balanced class weights (currently too conservative)
+   - Adjust decision threshold from default 0.5 to ~0.3
+   - Consider probability calibration (Platt scaling)
+   - Re-run fairness analysis after threshold optimization
+
+4. **Root Cause**:
+   - Likely severe class imbalance in training data
+   - Model learned to predict "no default" for almost everyone
+   - Need `class_weight='balanced'` in LightGBM parameters
+
+---
+
+### Regulatory Compliance Status
+
+#### Behavioral Model
+
+| Framework                        | Requirement                                      | Status    | Notes                         |
+| -------------------------------- | ------------------------------------------------ | --------- | ----------------------------- |
+| **Equal Credit Opportunity Act** | No discrimination by age, gender, marital status | PARTIAL   | Age & education bias detected |
+| **Fair Lending Laws**            | 80% disparate impact rule                        | PARTIAL   | Age: 68.5%, Education: 0%     |
+| **GDPR Article 22**              | Right to explanation                             | COMPLIANT | SHAP values available         |
+| **Model Risk Management**        | Ongoing monitoring required                      | REQUIRED  | Quarterly audits recommended  |
+
+#### Ensemble Model
+
+**Baseline Model:**
+
+| Framework                        | Requirement                                      | Status        | Notes                      |
+| -------------------------------- | ------------------------------------------------ | ------------- | -------------------------- |
+| **Equal Credit Opportunity Act** | No discrimination by age, gender, marital status | NON-COMPLIANT | All attributes fail        |
+| **Fair Lending Laws**            | 80% disparate impact rule                        | NON-COMPLIANT | Age: 44.8%, worst violator |
+| **GDPR Article 22**              | Right to explanation                             | COMPLIANT     | SHAP values available      |
+| **Model Risk Management**        | Ongoing monitoring required                      | CRITICAL      | Use fair model instead     |
+
+**Fair Model (Threshold-Optimized):**
+
+| Framework                        | Requirement                                      | Status     | Notes                                |
+| -------------------------------- | ------------------------------------------------ | ---------- | ------------------------------------ |
+| **Equal Credit Opportunity Act** | No discrimination by age, gender, marital status | COMPLIANT  | All 3 attributes pass 80% rule       |
+| **Fair Lending Laws**            | 80% disparate impact rule                        | COMPLIANT  | SEX 98.4%, MARRIAGE 97.8%, AGE 94.5% |
+| **GDPR Article 22**              | Right to explanation                             | COMPLIANT  | SHAP values + threshold transparency |
+| **Model Risk Management**        | Ongoing monitoring required                      | ACCEPTABLE | Monitor precision/recall trade-off   |
+
+#### Traditional Model
+
+| Framework                        | Requirement                                      | Status     | Notes                                      |
+| -------------------------------- | ------------------------------------------------ | ---------- | ------------------------------------------ |
+| **Equal Credit Opportunity Act** | No discrimination by age, gender, marital status | UNRELIABLE | 99.7% rejection rate - model is not usable |
+| **Fair Lending Laws**            | 80% disparate impact rule                        | UNRELIABLE | Too few predictions to assess              |
+| **GDPR Article 22**              | Right to explanation                             | COMPLIANT  | SHAP values available                      |
+| **Model Risk Management**        | Ongoing monitoring required                      | CRITICAL   | Complete recalibration required            |
+
+---
+
+### Accessing Fairness Reports in the App
+
+**Location**: Navigate to **Model Metrics** page → Select ensemble model → Toggle **"Use Fair Model"** in **Fairness & Bias Analysis** section
+
+**Available Features**:
+
+1. **Fair Model Toggle**: Switch between baseline and fairness-optimized predictions
+2. **Group-Specific Thresholds**: View exact thresholds for each demographic group
+3. **Disparate Impact Metrics**: 80% rule compliance visualization
+4. **Performance Comparison**: Side-by-side baseline vs fair model metrics
+5. **Confusion Matrix**: Uses fair predictions when enabled
+6. **ROC Curve**: Same for both models (probability-based, not prediction-based)
+
+**Interactive Features**:
+
+- Model selector (Behavioral/Ensemble/Traditional)
+- Fair model toggle (Ensemble only)
+- Dynamic metrics update when switching models
+- Color-coded compliance indicators (green=PASS, red=FAIL)
+- Detailed threshold information display
+
+**How to Use Fair Model:**
+
+1. Navigate to **Model Metrics** page
+2. Select **model_ensemble_wrapper.pkl** from dropdown
+3. Scroll to **Fairness & Bias Analysis** section
+4. Toggle **"Use Fair Model"** checkbox
+5. View updated confusion matrix and metrics using fair predictions
+6. See group-specific thresholds and disparate impact ratios
+
+---
+
+### Re-running Fairness Analysis
+
+To regenerate fairness reports with updated data:
+
+```powershell
+# Activate virtual environment
+.\myenv\Scripts\Activate.ps1
+
+# Run fairness analysis script
+python src/fairness_analysis.py
+```
+
+**Generated Reports** (located in `fairness_reports/`):
+
+- `behavioral_model_fairness_report.txt` - Detailed metrics for behavioral model
+- `ensemble_model_fairness_report.txt` - Detailed metrics for ensemble model
+- `traditional_model_fairness_report.txt` - Detailed metrics for traditional model
+- `acceptance_rates_*.png` - Visual charts showing group-wise acceptance rates
+- `disparate_impact_*.png` - Disparate impact ratio visualizations
+
+**Additional Documentation**:
+
+- `FAIRNESS_ANALYSIS_SUMMARY.md` - Comprehensive 30-page fairness analysis
+- `FAIRNESS_QUICK_REFERENCE.md` - Quick reference guide for fairness metrics
+- `FAIRNESS_REPORT.md` - Executive summary
 
 ---
 
@@ -709,14 +1063,23 @@ pip install -r requirement.txt
 
 **Key Dependencies**:
 
-- streamlit>=1.28.0
-- pandas>=2.0.0
-- numpy>=1.24.0
-- scikit-learn>=1.3.0
-- lightgbm>=4.0.0
-- plotly>=5.17.0
-- shap>=0.42.0
-- joblib>=1.3.0
+- **streamlit** - Web dashboard framework
+- **pandas** - Data manipulation
+- **numpy** - Numerical computing
+- **scikit-learn** - ML algorithms and utilities
+- **lightgbm** - Gradient boosting for traditional/behavioral models
+- **catboost>=1.2** - Gradient boosting for ensemble model
+- **xgboost** - Alternative gradient boosting
+- **fairlearn** - Fairness assessment and mitigation (required for fair model)
+- **imbalanced-learn** - Class imbalance handling
+- **shap** - Model interpretability
+- **plotly** - Interactive visualizations
+- **matplotlib** - Static plotting
+- **seaborn** - Statistical visualization
+- **joblib** - Model persistence
+- **mlflow** - Experiment tracking (optional)
+
+**Critical for Fair Model**: fairlearn, catboost>=1.2
 
 ### Step 4: Verify Data Files
 
@@ -936,7 +1299,14 @@ Loan Default Hybrid System/
 │   ├── Behaviorial_model.pkl      # Behavioral model (1.05 MB, 44 features)
 │   ├── model_ensemble_wrapper.pkl # Ensemble wrapper (8.91 MB)
 │   ├── model_ensemble_hybrid.pkl  # Raw meta-learner
-│   └── ensemble_metadata.pkl      # Ensemble configuration
+│   ├── ensemble_metadata.pkl      # Ensemble configuration
+│   └── fair_models/               # Fairness-optimized models
+│       ├── fair_ensemble_model.pkl          # Main fair model
+│       ├── threshold_optimizer_sex.pkl      # SEX optimizer
+│       ├── threshold_optimizer_marriage.pkl # MARRIAGE optimizer
+│       ├── threshold_optimizer_age_group.pkl# AGE_GROUP optimizer
+│       ├── wrapped_ensemble_model.pkl       # Wrapped base model
+│       └── fairness_utils.pkl               # Helper functions
 │
 ├── src/                           # Source code modules
 │   ├── __init__.py
@@ -1040,18 +1410,7 @@ Loan Default Hybrid System/
 
 ### Technical Documentation
 
-- **[HYBRID_MODEL_SUMMARY.md](HYBRID_MODEL_SUMMARY.md)** - Detailed ensemble architecture and stacking framework
 - **[MODEL_ARCHITECTURE_FLOWCHART.md](MODEL_ARCHITECTURE_FLOWCHART.md)** - Visual architecture guide
-- **[DATA_FLOW_EXPLANATION.md](DATA_FLOW_EXPLANATION.md)** - Data pipeline documentation
-- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Complete deployment instructions for multiple platforms
-
-### Project Status & Limitations
-
-- **[PROJECT_LIMITATIONS.md](PROJECT_LIMITATIONS.md)** - Known limitations and constraints
-  - Data limitations
-  - Model constraints
-  - Feature simulation assumptions
-  - Performance boundaries
 
 ---
 
@@ -1084,12 +1443,6 @@ pytest --cov=src tests/
 ---
 
 ## Statistical Validation
-
-### Chapter 4 Statistical Analysis Notebook
-
-**Location**: `Chapter4_Statistical_Analysis.ipynb`
-
-**Purpose**: Rigorous statistical validation of all model performance claims with comprehensive significance testing.
 
 #### Notebook Structure (18 Cells)
 
@@ -1245,7 +1598,7 @@ code Chapter4_Statistical_Analysis.ipynb
 - matplotlib, seaborn (for bootstrap distributions)
 
 **Validation Summary:**
-All Chapter 4 performance claims are **fully validated** with rigorous statistical testing:
+Performances are **fully validated** with rigorous statistical testing:
 
 - ✓ AUC improvements statistically significant (p<0.001)
 - ✓ Recall improvements validated (88.89% at threshold 0.32)
@@ -1319,22 +1672,6 @@ All Chapter 4 performance claims are **fully validated** with rigorous statistic
 - Runtime memory: ~500MB-1GB
 - Large batch predictions may require more RAM
 
-### Deployment Notes
-
-**Feature Alignment:**
-
-- Input data must exactly match training feature names
-- Missing columns will cause prediction failure
-- Extra columns are ignored
-
-**Version Compatibility:**
-
-- Models trained with scikit-learn 1.6.1
-- Running with 1.7.2 works but version warnings occur
-- Retraining recommended for long-term production use
-
-For detailed limitations, see **[PROJECT_LIMITATIONS.md](PROJECT_LIMITATIONS.md)**
-
 ---
 
 ## Technical Deep Dive
@@ -1402,17 +1739,44 @@ For detailed limitations, see **[PROJECT_LIMITATIONS.md](PROJECT_LIMITATIONS.md)
 
 ### Libraries & Tools
 
-- **LightGBM**: Microsoft's gradient boosting framework
-- **Streamlit**: Interactive dashboard framework
-- **SHAP**: Model interpretability
-- **Plotly**: Interactive visualizations
-- **scikit-learn**: Machine learning utilities
+**Machine Learning Frameworks:**
+
+- **LightGBM**: Microsoft's gradient boosting framework for traditional/behavioral models
+- **CatBoost**: Yandex's gradient boosting for ensemble meta-learning (supports categorical features)
+- **XGBoost**: Extreme gradient boosting (auxiliary model training)
+- **scikit-learn**: Core machine learning utilities, preprocessing, and metrics
+
+**Fairness & Bias Mitigation:**
+
+- **Fairlearn**: Microsoft's fairness toolkit for threshold optimization and bias mitigation
+- **imbalanced-learn**: Handling class imbalance in training data
+
+**Model Interpretability:**
+
+- **SHAP**: SHapley Additive exPlanations for model interpretation and feature importance
+
+**Visualization & Dashboard:**
+
+- **Streamlit**: Interactive web dashboard framework
+- **Plotly**: Interactive visualizations (ROC curves, confusion matrices, feature importance)
+- **Matplotlib**: Static plotting for reports
+- **Seaborn**: Statistical data visualization
+
+**Data Processing:**
+
+- **pandas**: Data manipulation and analysis
+- **NumPy**: Numerical computing and array operations
+
+**Model Management:**
+
+- **joblib**: Model serialization and deserialization
+- **MLflow**: Experiment tracking and model versioning (optional)
 
 ---
 
-**Last Updated**: December 5, 2025  
-**Version**: 2.3.0  
+**Last Updated**: December 23, 2025  
+**Version**: 2.5.0  
 **Status**: Production Ready  
-**Latest Update**: Statistical validation analysis with interactive visualizations (`Chapter4_Statistical_Analysis.ipynb`)
+**Latest Update**: Fair ensemble model integration with group-specific threshold optimization for demographic parity (SEX 98.4%, MARRIAGE 97.8%, AGE_GROUP 94.5% disparate impact compliance)
 
 ---

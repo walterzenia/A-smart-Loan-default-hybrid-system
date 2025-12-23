@@ -183,6 +183,10 @@ optimized for high performance and accuracy.
 - **Behavioral Features**: Payment patterns, spending behavior (AUC: ~0.77)
 - **Ensemble Hybrid**: CatBoost meta-learner combining Traditional + Behavioral **(Recall: 89.3% @ 0.32 threshold - Optimized for Default Detection!)**
   - Note: AUC 0.8514 vs LightGBM's 0.8577 - prioritizes catching defaults over discrimination
+- **Fair Ensemble Model**: Fairness-optimized with group-specific thresholds **(NEW!)**
+  - Passes 80% rule for SEX (98.4%), MARRIAGE (97.8%), AGE_GROUP (94.5%)
+  - Higher precision (64.3%), lower recall (16.7%) - Risk-averse strategy
+  - Toggle between baseline and fair model in Prediction and Model Metrics pages
 """)
 
 st.markdown("---")

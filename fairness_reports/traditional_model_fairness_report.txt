@@ -1,0 +1,534 @@
+
+================================================================================
+FAIRNESS ANALYSIS REPORT: Traditional Model
+================================================================================
+
+
+DEMOGRAPHIC_PARITY_SEX
+--------------------------------------------------------------------------------
+
+  Group 0.0:
+    acceptance_rate: 0.0000
+    n_samples: 1
+
+  Group 1.0:
+    acceptance_rate: 0.0000
+    n_samples: 1173
+
+  Group 2.0:
+    acceptance_rate: 0.0026
+    n_samples: 2294
+
+  Summary:
+    max_disparity: 0.0026155187445510027
+    passes_5pct_threshold: True
+
+EQUALIZED_ODDS_SEX
+--------------------------------------------------------------------------------
+
+  Group 0.0:
+    tpr: None
+    fpr: None
+    n_samples: 1
+    n_positive: 0
+    n_negative: 1
+    note: Insufficient class diversity for TPR/FPR calculation
+
+  Group 1.0:
+    tpr: 0.0000
+    fpr: 0.0000
+    n_samples: 1173
+    n_positive: 126
+    n_negative: 1047
+
+  Group 2.0:
+    tpr: 0.0278
+    fpr: 0.0009
+    n_samples: 2294
+    n_positive: 144
+    n_negative: 2150
+
+  Summary:
+    tpr_disparity: 0.027777777777777776
+    fpr_disparity: 0.0009302325581395349
+    passes_5pct_threshold: True
+
+DISPARATE_IMPACT_SEX
+--------------------------------------------------------------------------------
+
+  Group reference_group:
+
+  Group reference_rate:
+
+  Group 0.0:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Group 1.0:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Group 2.0:
+    acceptance_rate: 0.0026
+    disparate_impact_ratio: 1.0000
+    passes_80pct_rule: True
+
+  Summary:
+    all_groups_pass: False
+    min_ratio: 0.0
+
+PREDICTIVE_PARITY_SEX
+--------------------------------------------------------------------------------
+
+  Group 0.0:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 1
+
+  Group 1.0:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 1173
+
+  Group 2.0:
+    precision: 0.6667
+    n_predicted_positive: 6
+    n_samples: 2294
+
+  Summary:
+    precision_disparity: 0.6666666666666666
+    passes_5pct_threshold: False
+
+CALIBRATION_SEX
+--------------------------------------------------------------------------------
+
+  Group 1.0:
+    expected_calibration_error: 0.2927
+    n_samples: 1173
+
+  Group 2.0:
+    expected_calibration_error: 0.1988
+    n_samples: 2294
+
+  Summary:
+    max_ece: 0.2927067910959872
+    mean_ece: 0.2457332378898857
+
+DEMOGRAPHIC_PARITY_EDUCATION
+--------------------------------------------------------------------------------
+
+  Group 1:
+    acceptance_rate: 0.0000
+    n_samples: 42
+
+  Group 2:
+    acceptance_rate: 0.0012
+    n_samples: 2433
+
+  Group 3:
+    acceptance_rate: 0.0000
+    n_samples: 124
+
+  Group 4:
+    acceptance_rate: 0.0035
+    n_samples: 867
+
+  Group 5:
+    acceptance_rate: 0.0000
+    n_samples: 2
+
+  Summary:
+    max_disparity: 0.0034602076124567475
+    passes_5pct_threshold: True
+
+EQUALIZED_ODDS_EDUCATION
+--------------------------------------------------------------------------------
+
+  Group 1:
+    tpr: 0.0000
+    fpr: 0.0000
+    n_samples: 42
+    n_positive: 4
+    n_negative: 38
+
+  Group 2:
+    tpr: 0.0094
+    fpr: 0.0005
+    n_samples: 2433
+    n_positive: 213
+    n_negative: 2220
+
+  Group 3:
+    tpr: 0.0000
+    fpr: 0.0000
+    n_samples: 124
+    n_positive: 16
+    n_negative: 108
+
+  Group 4:
+    tpr: 0.0541
+    fpr: 0.0012
+    n_samples: 867
+    n_positive: 37
+    n_negative: 830
+
+  Group 5:
+    tpr: None
+    fpr: None
+    n_samples: 2
+    n_positive: 0
+    n_negative: 2
+    note: Insufficient class diversity for TPR/FPR calculation
+
+  Summary:
+    tpr_disparity: 0.05405405405405406
+    fpr_disparity: 0.0012048192771084338
+    passes_5pct_threshold: False
+
+DISPARATE_IMPACT_EDUCATION
+--------------------------------------------------------------------------------
+
+  Group reference_group:
+
+  Group reference_rate:
+
+  Group 1:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Group 2:
+    acceptance_rate: 0.0012
+    disparate_impact_ratio: 0.3564
+    passes_80pct_rule: False
+
+  Group 3:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Group 4:
+    acceptance_rate: 0.0035
+    disparate_impact_ratio: 1.0000
+    passes_80pct_rule: True
+
+  Group 5:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Summary:
+    all_groups_pass: False
+    min_ratio: 0.0
+
+PREDICTIVE_PARITY_EDUCATION
+--------------------------------------------------------------------------------
+
+  Group 1:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 42
+
+  Group 2:
+    precision: 0.6667
+    n_predicted_positive: 3
+    n_samples: 2433
+
+  Group 3:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 124
+
+  Group 4:
+    precision: 0.6667
+    n_predicted_positive: 3
+    n_samples: 867
+
+  Group 5:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 2
+
+  Summary:
+    precision_disparity: 0.6666666666666666
+    passes_5pct_threshold: False
+
+CALIBRATION_EDUCATION
+--------------------------------------------------------------------------------
+
+  Group 1:
+    expected_calibration_error: 0.1427
+    n_samples: 42
+
+  Group 2:
+    expected_calibration_error: 0.2170
+    n_samples: 2433
+
+  Group 3:
+    expected_calibration_error: 0.2672
+    n_samples: 124
+
+  Group 4:
+    expected_calibration_error: 0.1420
+    n_samples: 867
+
+  Summary:
+    max_ece: 0.267167100283608
+    mean_ece: 0.19222869726214784
+
+DEMOGRAPHIC_PARITY_MARRIAGE
+--------------------------------------------------------------------------------
+
+  Group 1:
+    acceptance_rate: 0.0019
+    n_samples: 2577
+
+  Group 2:
+    acceptance_rate: 0.0000
+    n_samples: 481
+
+  Group 3:
+    acceptance_rate: 0.0024
+    n_samples: 410
+
+  Summary:
+    max_disparity: 0.0024390243902439024
+    passes_5pct_threshold: True
+
+EQUALIZED_ODDS_MARRIAGE
+--------------------------------------------------------------------------------
+
+  Group 1:
+    tpr: 0.0152
+    fpr: 0.0008
+    n_samples: 2577
+    n_positive: 197
+    n_negative: 2380
+
+  Group 2:
+    tpr: 0.0000
+    fpr: 0.0000
+    n_samples: 481
+    n_positive: 49
+    n_negative: 432
+
+  Group 3:
+    tpr: 0.0417
+    fpr: 0.0000
+    n_samples: 410
+    n_positive: 24
+    n_negative: 386
+
+  Summary:
+    tpr_disparity: 0.041666666666666664
+    fpr_disparity: 0.0008403361344537816
+    passes_5pct_threshold: True
+
+DISPARATE_IMPACT_MARRIAGE
+--------------------------------------------------------------------------------
+
+  Group reference_group:
+
+  Group reference_rate:
+
+  Group 1:
+    acceptance_rate: 0.0019
+    disparate_impact_ratio: 0.7955
+    passes_80pct_rule: False
+
+  Group 2:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Group 3:
+    acceptance_rate: 0.0024
+    disparate_impact_ratio: 1.0000
+    passes_80pct_rule: True
+
+  Summary:
+    all_groups_pass: False
+    min_ratio: 0.0
+
+PREDICTIVE_PARITY_MARRIAGE
+--------------------------------------------------------------------------------
+
+  Group 1:
+    precision: 0.6000
+    n_predicted_positive: 5
+    n_samples: 2577
+
+  Group 2:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 481
+
+  Group 3:
+    precision: 1.0000
+    n_predicted_positive: 1
+    n_samples: 410
+
+  Summary:
+    precision_disparity: 1.0
+    passes_5pct_threshold: False
+
+CALIBRATION_MARRIAGE
+--------------------------------------------------------------------------------
+
+  Group 1:
+    expected_calibration_error: 0.2373
+    n_samples: 2577
+
+  Group 2:
+    expected_calibration_error: 0.2293
+    n_samples: 481
+
+  Group 3:
+    expected_calibration_error: 0.2790
+    n_samples: 410
+
+  Summary:
+    max_ece: 0.2789878654378886
+    mean_ece: 0.2485082757737266
+
+DEMOGRAPHIC_PARITY_AGE_GROUP
+--------------------------------------------------------------------------------
+
+  Group 30-40:
+    acceptance_rate: 0.0032
+    n_samples: 933
+
+  Group 40-50:
+    acceptance_rate: 0.0011
+    n_samples: 883
+
+  Group 50+:
+    acceptance_rate: 0.0017
+    n_samples: 1161
+
+  Group <30:
+    acceptance_rate: 0.0000
+    n_samples: 491
+
+  Summary:
+    max_disparity: 0.003215434083601286
+    passes_5pct_threshold: True
+
+EQUALIZED_ODDS_AGE_GROUP
+--------------------------------------------------------------------------------
+
+  Group 30-40:
+    tpr: 0.0225
+    fpr: 0.0012
+    n_samples: 933
+    n_positive: 89
+    n_negative: 844
+
+  Group 40-50:
+    tpr: 0.0154
+    fpr: 0.0000
+    n_samples: 883
+    n_positive: 65
+    n_negative: 818
+
+  Group 50+:
+    tpr: 0.0164
+    fpr: 0.0009
+    n_samples: 1161
+    n_positive: 61
+    n_negative: 1100
+
+  Group <30:
+    tpr: 0.0000
+    fpr: 0.0000
+    n_samples: 491
+    n_positive: 55
+    n_negative: 436
+
+  Summary:
+    tpr_disparity: 0.02247191011235955
+    fpr_disparity: 0.001184834123222749
+    passes_5pct_threshold: True
+
+DISPARATE_IMPACT_AGE_GROUP
+--------------------------------------------------------------------------------
+
+  Group reference_group:
+
+  Group reference_rate:
+
+  Group 30-40:
+    acceptance_rate: 0.0032
+    disparate_impact_ratio: 1.0000
+    passes_80pct_rule: True
+
+  Group 40-50:
+    acceptance_rate: 0.0011
+    disparate_impact_ratio: 0.3522
+    passes_80pct_rule: False
+
+  Group 50+:
+    acceptance_rate: 0.0017
+    disparate_impact_ratio: 0.5357
+    passes_80pct_rule: False
+
+  Group <30:
+    acceptance_rate: 0.0000
+    disparate_impact_ratio: 0.0000
+    passes_80pct_rule: False
+
+  Summary:
+    all_groups_pass: False
+    min_ratio: 0.0
+
+PREDICTIVE_PARITY_AGE_GROUP
+--------------------------------------------------------------------------------
+
+  Group 30-40:
+    precision: 0.6667
+    n_predicted_positive: 3
+    n_samples: 933
+
+  Group 40-50:
+    precision: 1.0000
+    n_predicted_positive: 1
+    n_samples: 883
+
+  Group 50+:
+    precision: 0.5000
+    n_predicted_positive: 2
+    n_samples: 1161
+
+  Group <30:
+    precision: 0
+    n_predicted_positive: 0
+    n_samples: 491
+
+  Summary:
+    precision_disparity: 1.0
+    passes_5pct_threshold: False
+
+CALIBRATION_AGE_GROUP
+--------------------------------------------------------------------------------
+
+  Group 30-40:
+    expected_calibration_error: 0.1892
+    n_samples: 933
+
+  Group 40-50:
+    expected_calibration_error: 0.2615
+    n_samples: 883
+
+  Group 50+:
+    expected_calibration_error: 0.2014
+    n_samples: 1161
+
+  Group <30:
+    expected_calibration_error: 0.2052
+    n_samples: 491
+
+  Summary:
+    max_ece: 0.26151165057795656
+    mean_ece: 0.21430984361492988

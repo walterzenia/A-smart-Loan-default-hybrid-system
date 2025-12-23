@@ -84,6 +84,112 @@ def get_available_models():
     
     return available_models
 
+def load_fair_ensemble_model():
+    """Load the fair ensemble model with threshold optimizers."""
+    fair_model_path = Path("models/fair_models/fair_ensemble_model.pkl")
+    if not fair_model_path.exists():
+        return None
+    try:
+        # Import the class before loading to ensure it's available
+        sys.path.append(str(Path(__file__).parent.parent / "src"))
+        from fair_ensemble_model import FairEnsembleModel
+        
+        mtime = os.path.getmtime(fair_model_path)
+        return _load_fair_model_cached(str(fair_model_path), mtime)
+    except Exception as e:
+        st.error(f"Error loading fair model: {e}")
+        return None
+
+@st.cache_resource
+def _load_fair_model_cached(model_path, _mtime):
+    """Internal cached fair model loader."""
+    try:
+        import sys
+        from pathlib import Path
+        sys.path.append(str(Path(__file__).parent.parent / "src"))
+        from fair_ensemble_model import FairEnsembleModel
+        
+        fair_model = joblib.load(model_path)
+        return fair_model
+    except Exception as e:
+        st.error(f"Error loading fair model: {e}")
+        return None
+
+def extract_protected_attributes(data):
+    """Extract protected attributes from data for fairness evaluation."""
+    protected_attrs = {}
+    
+    # Look for protected attributes with various prefixes
+    attr_names = ['SEX', 'EDUCATION', 'MARRIAGE', 'AGE_GROUP']
+    prefixes = ['behav_', 'trad_', '']
+    
+    for attr in attr_names:
+        for prefix in prefixes:
+            col_name = f"{prefix}{attr}"
+            if col_name in data.columns:
+                protected_attrs[attr] = data[col_name].values
+                break
+    
+    # Create AGE_GROUP from DAYS_BIRTH if not found
+    if 'AGE_GROUP' not in protected_attrs:
+        for col in data.columns:
+            if 'DAYS_BIRTH' in col:
+                age_years = -data[col] / 365.25
+                age_group = pd.cut(age_years, 
+                                  bins=[0, 30, 40, 50, 60, 100], 
+                                  labels=[0, 1, 2, 3, 4],
+                                  right=False)
+                protected_attrs['AGE_GROUP'] = age_group.astype(int).values
+                break
+    
+    return protected_attrs
+
+def calculate_fairness_metrics(y_true, y_pred, sensitive_feature, feature_name):
+    """Calculate comprehensive fairness metrics for a protected attribute."""
+    results = {
+        'feature': feature_name,
+        'groups': {},
+        'overall': {}
+    }
+    
+    unique_groups = np.unique(sensitive_feature)
+    acceptance_rates = []
+    
+    for group in unique_groups:
+        mask = sensitive_feature == group
+        group_pred = y_pred[mask]
+        group_true = y_true[mask]
+        
+        acceptance_rate = group_pred.mean()
+        n_samples = len(group_pred)
+        
+        # TPR and FPR
+        tpr = group_pred[group_true == 1].mean() if group_true.sum() > 0 else None
+        fpr = group_pred[group_true == 0].mean() if (group_true == 0).sum() > 0 else None
+        
+        results['groups'][group] = {
+            'acceptance_rate': acceptance_rate,
+            'n_samples': n_samples,
+            'tpr': tpr,
+            'fpr': fpr,
+            'n_defaults': int(group_true.sum())
+        }
+        
+        acceptance_rates.append(acceptance_rate)
+    
+    # Calculate disparate impact (80% rule)
+    if len(acceptance_rates) > 0:
+        max_rate = max(acceptance_rates)
+        min_rate = min(acceptance_rates)
+        
+        disparate_impact_ratio = min_rate / max_rate if max_rate > 0 else 0.0
+        
+        results['overall']['disparate_impact_ratio'] = disparate_impact_ratio
+        results['overall']['passes_80_rule'] = disparate_impact_ratio >= 0.8
+        results['overall']['demographic_parity_diff'] = max_rate - min_rate
+    
+    return results
+
 def get_model_type(model_name):
     """Determine model type from filename."""
     model_name = model_name.lower()
@@ -166,8 +272,9 @@ def get_predictions(model, X):
             try:
                 proba = model.predict_proba(X_aligned)
                 if proba.shape[1] >= 2:
-                    probabilities = proba[:, 1]
+                    probabilities = proba[:, 1]  # Probability of class 1 (default)
                 else:
+                    # If only one column, it should be class 1 probability
                     probabilities = proba[:, 0]
             except:
                 try:

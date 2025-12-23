@@ -119,7 +119,7 @@ Choose from three available models:
   - Optimal threshold 0.5 (adjustable based on risk tolerance)
   - **Meta-features**: pred_traditional, pred_behavioral, pred_avg, pred_max, pred_min, pred_diff, pred_ratio
   - **Raw features preserved**: All 487 traditional + 44 behavioral features included alongside meta-features
-  - **Feature prefixes**: Shows source of each feature (pred*\*, trad*_, behav\__)
+  - **Feature prefixes**: Shows source of each feature (pred*\*, trad*\_, behav\_\_)
 - Technical: CatBoost with auto class balancing, early stopping at iteration 68
 
 #### Step 2: Choose Input Method
@@ -345,6 +345,8 @@ Visual categorization for quick decision-making:
 
 #### Performance Metrics Explained
 
+**Note on Fair Model:** When viewing the Ensemble model, you can toggle the "Use Fair Model" option in the Fairness & Bias Analysis section to compare baseline vs fairness-optimized predictions. The fair model uses group-specific thresholds (not a single threshold slider) to achieve demographic parity across protected attributes.
+
 **Accuracy**
 
 - Percentage of correct predictions (both defaults and non-defaults)
@@ -391,6 +393,37 @@ Visual categorization for quick decision-making:
 - Traditional: 0.797
 - Behavioral: 0.771
 - Ensemble: 0.812
+
+#### Fairness & Bias Analysis
+
+**Available for:** Ensemble Model
+
+**Key Features:**
+
+- **Fair Model Toggle:** Switch between baseline and fairness-optimized ensemble
+- **Group-Specific Thresholds:** View exact thresholds used for each demographic group
+  - SEX: Males (0.72%), Females (51.27%)
+  - MARRIAGE: Single (18.74%), Married (18.67%), Widowed/Divorced (83.50%)
+  - AGE_GROUP: 5 age ranges with thresholds from 0.36% to 18.56%
+- **Disparate Impact Metrics:** 80% rule compliance for all groups
+  - SEX: 98.4% ✅
+  - MARRIAGE: 97.8% ✅
+  - AGE_GROUP: 94.5% ✅
+- **Performance Comparison:** Side-by-side baseline vs fair model metrics
+- **Confusion Matrix:** Uses fair predictions when enabled
+
+**How Fair Model Works:**
+
+1. Uses same probabilities as baseline model
+2. Applies different decision thresholds to different demographic groups
+3. Ensures minimum group acceptance rate / maximum group acceptance rate ≥ 0.8
+4. No threshold slider (uses optimized group-specific thresholds)
+
+**Trade-offs:**
+
+- Higher precision (64.3% vs 24.7%): Fewer false alarms
+- Lower recall (16.7% vs 77.8%): Misses more defaults
+- Better for risk-averse lending strategies
 
 #### Training History Visualization
 
