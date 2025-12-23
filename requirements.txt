@@ -11,4 +11,5 @@ mlflow
 shap
 plotly
 joblib
+fairlearn
 streamlit
